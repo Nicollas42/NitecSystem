@@ -1,0 +1,195 @@
+[
+    {
+        "id_venda": 1766713229,
+        "data": "25/12/2025 22:40",
+        "total": 52363.58,
+        "itens": [
+            {
+                "produto": "tua mãe",
+                "qtd": 1,
+                "total": "1.0"
+            },
+            {
+                "produto": "tua mãe",
+                "qtd": 1,
+                "total": "1.0"
+            },
+            {
+                "produto": "Pão Francês (KG)",
+                "qtd": "12.0",
+                "total": "178.8"
+            },
+            {
+                "produto": "Pão Francês (KG)",
+                "qtd": "0.2",
+                "total": "2.98"
+            }
+        ],
+        "operador": "Carlos Dono",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id_venda": 1766713295,
+        "data": "25/12/2025 22:41",
+        "total": 178.8,
+        "itens": [
+            {
+                "produto": "Pão Francês (KG)",
+                "qtd": "12.0",
+                "total": "178.8"
+            }
+        ],
+        "operador": "Carlos Dono",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id_venda": 1766718011,
+        "data": "26/12/2025 00:00",
+        "total": 2.0,
+        "itens": [
+            {
+                "produto": "tua mãe",
+                "qtd": 1,
+                "total": "1.0"
+            },
+            {
+                "produto": "tua mãe",
+                "qtd": 1,
+                "total": "1.0"
+            }
+        ],
+        "operador": "Carlos Dono",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id_venda": 1766718035,
+        "data": "26/12/2025 00:00",
+        "total": 1.0,
+        "itens": [
+            {
+                "produto": "tua mãe",
+                "qtd": 1,
+                "total": "1.0"
+            }
+        ],
+        "operador": "Carlos Dono",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id_venda": 1766718123,
+        "data": "26/12/2025 00:02",
+        "total": 63.7,
+        "itens": [
+            {
+                "produto": "minixinha",
+                "qtd": "1.000",
+                "total": "0.7"
+            },
+            {
+                "produto": "minixinha",
+                "qtd": "90.000",
+                "total": "63.0"
+            }
+        ],
+        "operador": "Carlos Dono",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id_venda": 1766720278,
+        "data": "26/12/2025 00:37",
+        "total": 20.0,
+        "itens": [
+            {
+                "produto": "acabaxi (bala)",
+                "qtd": 1.0,
+                "total": 20.0
+            }
+        ],
+        "operador": "Carlos Dono",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id_venda": 1766723659,
+        "data": "26/12/2025 01:34",
+        "total": 10.0,
+        "itens": [
+            {
+                "produto": "durepox",
+                "qtd": 1,
+                "total": 10.0
+            }
+        ],
+        "operador": "Carlos Dono",
+        "pagamento": "Pix"
+    },
+    {
+        "id_venda": 1766723715,
+        "data": "26/12/2025 01:35",
+        "total": 10.0,
+        "itens": [
+            {
+                "produto": "durepox",
+                "qtd": 1,
+                "total": 10.0
+            }
+        ],
+        "operador": "Carlos Dono",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id_venda": 1766723726,
+        "data": "26/12/2025 01:35",
+        "total": 10.0,
+        "itens": [
+            {
+                "produto": "durepox",
+                "qtd": 1,
+                "total": 10.0
+            }
+        ],
+        "operador": "Carlos Dono",
+        "pagamento": "Débito"
+    },
+    {
+        "id_venda": 1766723733,
+        "data": "26/12/2025 01:35",
+        "total": 10.0,
+        "itens": [
+            {
+                "produto": "durepox",
+                "qtd": 1,
+                "total": 10.0
+            }
+        ],
+        "operador": "Carlos Dono",
+        "pagamento": "Crédito"
+    },
+    {
+        "id_venda": 1766723739,
+        "data": "26/12/2025 01:35",
+        "total": 10.0,
+        "itens": [
+            {
+                "produto": "durepox",
+                "qtd": 1,
+                "total": 10.0
+            }
+        ],
+        "operador": "Carlos Dono",
+        "pagamento": "Pix"
+    },
+    {
+        "id_venda": 1766724992,
+        "data": "26/12/2025 01:56",
+        "total": 10.0,
+        "itens": [
+            {
+                "produto": "durepox",
+                "qtd": 1,
+                "total": 10.0
+            }
+        ],
+        "operador": "Carlos Dono",
+        "pagamento": "Pix"
+    }
+]
