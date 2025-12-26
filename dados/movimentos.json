@@ -1,0 +1,13 @@
+[
+    {
+        "data": "2025-12-26 19:54:55",
+        "tipo": "VENDA",
+        "cod": "123",
+        "nome": "123",
+        "qtd": -3.0,
+        "anterior": 123.0,
+        "novo": 120.0,
+        "motivo": "Venda PDV",
+        "usuario": "Carlos Dono"
+    }
+]

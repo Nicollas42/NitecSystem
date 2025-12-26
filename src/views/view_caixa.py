@@ -1,10 +1,12 @@
-# view_caixa.py
+# src/views/view_caixa.py
 import customtkinter as ctk
 from tkinter import ttk, messagebox
 from datetime import datetime
-import config_manager
-import database
 import time
+
+# --- CORREÇÃO DOS IMPORTS ---
+from src.controllers import config_manager
+from src.models import database
 
 class CaixaFrame(ctk.CTkFrame):
     def __init__(self, master, usuario_dados, callback_voltar):
@@ -12,20 +14,16 @@ class CaixaFrame(ctk.CTkFrame):
         self.usuario = usuario_dados
         self.voltar_menu = callback_voltar
         
-        # Carrega Configurações
         self.config = config_manager.carregar_config()
         self.cor_destaque = self.config["cor_destaque"]
         
-        # Carrega Banco de Dados
         self.produtos_db = database.carregar_produtos()
         
-        # Variáveis de Estado
         self.carrinho = [] 
         self.contador_id = 0
         self.ultimo_item_focado = None 
         self.total_a_pagar = 0.0
 
-        # Configuração do Grid Principal
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=2)
         self.grid_columnconfigure(1, weight=1)
@@ -33,7 +31,7 @@ class CaixaFrame(ctk.CTkFrame):
         self.montar_interface()
 
     def montar_interface(self):
-        # --- CABEÇALHO ---
+        # CABEÇALHO
         top = ctk.CTkFrame(self, height=50, corner_radius=0)
         top.grid(row=0, column=0, columnspan=2, sticky="ew")
         
@@ -49,13 +47,12 @@ class CaixaFrame(ctk.CTkFrame):
         self.lbl_relogio.pack(side="right", padx=20)
         self.atualizar_relogio()
 
-        # --- LADO ESQUERDO (LEITOR + LISTA) ---
+        # ESQUERDA
         left = ctk.CTkFrame(self, fg_color="transparent")
         left.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
         left.rowconfigure(1, weight=1)
         left.columnconfigure(0, weight=1)
 
-        # Área de Input (Scanner)
         f_input = ctk.CTkFrame(left, height=100)
         f_input.grid(row=0, column=0, sticky="ew", pady=(0,10))
         
@@ -66,38 +63,32 @@ class CaixaFrame(ctk.CTkFrame):
         
         self.entry_cod = ctk.CTkEntry(f_input, height=45, font=("Arial", 18), border_width=2)
         self.entry_cod.pack(fill="x", padx=10, pady=5)
-        
-        # Eventos do Input
         self.entry_cod.bind('<Return>', self.adicionar_item)
         self.entry_cod.bind('<FocusIn>', self.ao_focar_input)
         self.entry_cod.bind('<FocusOut>', self.ao_desfocar_input)
         self.entry_cod.focus()
 
-        # Tabela de Produtos (Treeview)
         self.style = ttk.Style()
         self.style.theme_use("clam")
         
         self.tree = ttk.Treeview(left, columns=('id', 'desc', 'qtd', 'un', 'preco', 'total'), show='headings', selectmode='browse')
         
-        # Configuração das Cores (Tags)
         self.tree.tag_configure('active', background=self.cor_destaque, foreground='black')
         self.tree.tag_configure('flash', background='white', foreground='black')
-        self.tree.tag_configure('partial', background='#F1C40F', foreground='black')   # Amarelo
-        self.tree.tag_configure('cancelled', background='#C0392B', foreground='white') # Vermelho
+        self.tree.tag_configure('partial', background='#F1C40F', foreground='black')
+        self.tree.tag_configure('cancelled', background='#C0392B', foreground='white')
 
         cols = ('id', 'desc', 'qtd', 'un', 'preco', 'total')
         for c in cols: self.tree.heading(c, text=c.upper())
         self.tree.column('desc', width=200); self.tree.column('id', width=30)
         self.tree.grid(row=1, column=0, sticky="nsew")
 
-        # --- LADO DIREITO (TOTAL + BOTÕES) ---
+        # DIREITA
         right = ctk.CTkFrame(self)
         right.grid(row=1, column=1, sticky="nsew", padx=(0,10), pady=10)
-        
         self.lbl_total = ctk.CTkLabel(right, text="R$ 0.00", font=("Arial", 40, "bold"), text_color=self.cor_destaque)
         self.lbl_total.pack(pady=40)
 
-        # Botões de Ação
         ctk.CTkButton(right, text="FINALIZAR (F5)", height=60, fg_color=self.cor_destaque, 
                       command=self.abrir_tela_pagamento).pack(side="bottom", fill="x", padx=20, pady=(10, 20))
         
@@ -107,16 +98,13 @@ class CaixaFrame(ctk.CTkFrame):
         ctk.CTkButton(right, text="CANCELAR VENDA (Esc)", fg_color="#C0392B", 
                       command=self.cancelar_venda_total).pack(side="bottom", fill="x", padx=20, pady=5)
 
-        # Atalhos Globais
         root = self.winfo_toplevel()
         root.bind('<F5>', lambda e: self.abrir_tela_pagamento())
         root.bind('<F1>', lambda e: self.entry_cod.focus_set())
         root.bind('<Escape>', lambda e: self.cancelar_venda_total())
         root.bind('<Delete>', lambda e: self.cancelar_item())
 
-    # --- UTILITÁRIOS ---
     def destroy(self):
-        # Remove atalhos ao fechar
         root = self.winfo_toplevel()
         try:
             root.unbind('<F5>')
@@ -138,13 +126,11 @@ class CaixaFrame(ctk.CTkFrame):
         self.entry_cod.configure(border_color="#E74C3C")
         self.lbl_status_leitor.configure(text="🔴 CLIQUE AQUI PARA ATIVAR O LEITOR", text_color="#E74C3C")
 
-    # --- LÓGICA DE VENDA ---
     def adicionar_item(self, event=None):
         cod = self.entry_cod.get().strip()
         if not cod: return
         self.entry_cod.delete(0, 'end')
         
-        # Parser Balança (Começa com 2, 12 digitos)
         if cod.startswith("2") and len(cod) == 12:
             plu = str(int(cod[1:6]))
             if plu in self.produtos_db:
@@ -152,7 +138,6 @@ class CaixaFrame(ctk.CTkFrame):
                 self.lancar(self.produtos_db[plu], cod, peso)
                 return
 
-        # Busca Normal
         if cod in self.produtos_db:
             prod = self.produtos_db[cod]
             if prod['un'] in ['KG', 'G']: self.popup_peso(prod, cod)
@@ -174,14 +159,12 @@ class CaixaFrame(ctk.CTkFrame):
         self.entry_cod.focus_set()
 
     def lancar(self, prod, cod, qtd):
-        # Verifica se já existe (Agrupamento)
         item_existente = None
         for item in self.carrinho:
             if item['codigo'] == cod:
                 item_existente = item
                 break
         
-        # Verifica Estoque
         est_atual = prod.get("estoque", 0)
         nome_exibicao = prod['nome']
         qtd_total_validacao = qtd
@@ -193,7 +176,6 @@ class CaixaFrame(ctk.CTkFrame):
         iid_linha = None 
 
         if item_existente:
-            # Atualiza Item Existente
             nova_qtd = item_existente['qtd'] + qtd
             novo_total = round(nova_qtd * prod['preco'], 2)
             
@@ -206,7 +188,6 @@ class CaixaFrame(ctk.CTkFrame):
             iid_linha = item_existente['tree_id']
             
         else:
-            # Novo Item
             self.contador_id += 1
             total = round(qtd * prod['preco'], 2)
             qtd_fmt = f"{qtd:.3f}" if prod['un'] in ['KG', 'G'] else f"{int(qtd)}"
@@ -226,24 +207,19 @@ class CaixaFrame(ctk.CTkFrame):
 
         self.atualizar_total()
         self.tree.yview_moveto(1)
-        
-        # Efeitos Visuais
         self.aplicar_destaque(iid_linha)
         try: self.tree.selection_remove(self.tree.selection())
         except: pass
         self.entry_cod.focus_set()
 
     def aplicar_destaque(self, iid_atual):
-        # Limpa destaque anterior
         if self.ultimo_item_focado and self.ultimo_item_focado != iid_atual:
             try:
                 tags_antigas = self.tree.item(self.ultimo_item_focado, "tags")
-                # Só limpa se não for cancelado nem parcial
                 if 'cancelled' not in tags_antigas and 'partial' not in tags_antigas:
                     self.tree.item(self.ultimo_item_focado, tags=()) 
             except: pass 
 
-        # Aplica Flash
         self.tree.item(iid_atual, tags=('flash',))
 
         def fixar_verde():
@@ -257,7 +233,6 @@ class CaixaFrame(ctk.CTkFrame):
         t = sum(i['total'] for i in self.carrinho)
         self.lbl_total.configure(text=f"R$ {t:.2f}")
 
-    # --- LÓGICA DE CANCELAMENTO ---
     def cancelar_item(self):
         sel = self.tree.selection()
         if not sel: 
@@ -306,7 +281,6 @@ class CaixaFrame(ctk.CTkFrame):
         qtd_fmt = f"{nova_qtd:.3f}" if item_alvo['un'] in ['KG', 'G'] else f"{int(nova_qtd)}"
         self.tree.item(item_visual, values=(item_alvo['id_visual'], item_alvo['nome'], qtd_fmt, item_alvo['un'], f"{item_alvo['preco']:.2f}", f"{novo_total:.2f}"))
 
-        # Aplica cores (Vermelho se zero, Amarelo se parcial)
         if nova_qtd == 0:
             self.tree.item(item_visual, tags=('cancelled',))
             if self.ultimo_item_focado == item_visual: self.ultimo_item_focado = None
@@ -328,9 +302,7 @@ class CaixaFrame(ctk.CTkFrame):
             self.atualizar_total()
             self.entry_cod.focus_set()
 
-    # --- LÓGICA DE PAGAMENTO ---
     def abrir_tela_pagamento(self):
-        # Validação
         itens_validos = [i for i in self.carrinho if i['qtd'] > 0]
         if not itens_validos:
             messagebox.showwarning("Vazio", "Passe produtos antes de finalizar.")
@@ -339,7 +311,6 @@ class CaixaFrame(ctk.CTkFrame):
         
         self.total_a_pagar = sum(i['total'] for i in itens_validos)
 
-        # Janela Popup
         self.janela_pag = ctk.CTkToplevel(self)
         self.janela_pag.title("Forma de Pagamento")
         self.janela_pag.geometry("500x450")
@@ -352,7 +323,6 @@ class CaixaFrame(ctk.CTkFrame):
         container = ctk.CTkFrame(self.janela_pag, fg_color="transparent")
         container.pack(fill="both", expand=True, padx=20)
 
-        # Lado Esquerdo (Botões)
         f_btns = ctk.CTkFrame(container)
         f_btns.pack(side="left", fill="both", expand=True, padx=10)
         
@@ -367,7 +337,6 @@ class CaixaFrame(ctk.CTkFrame):
         ctk.CTkButton(f_btns, text="💳 CRÉDITO", height=40, fg_color="#3498DB", 
                       command=lambda: self.confirmar_pagamento("Crédito")).pack(fill="x", pady=5, padx=10)
 
-        # Lado Direito (Dinheiro)
         f_money = ctk.CTkFrame(container)
         f_money.pack(side="right", fill="both", expand=True, padx=10)
         
@@ -386,26 +355,6 @@ class CaixaFrame(ctk.CTkFrame):
 
         self.entry_recebido.focus_set()
 
-    def calcular_troco_tempo_real(self, event):
-        texto = self.entry_recebido.get().replace(",", ".")
-        try:
-            recebido = float(texto)
-            troco = recebido - self.total_a_pagar
-            if troco >= 0:
-                self.lbl_troco.configure(text=f"Troco: R$ {troco:.2f}", text_color=self.cor_destaque)
-                self.btn_confirmar_dinheiro.configure(state="normal", fg_color=self.cor_destaque)
-            else:
-                self.lbl_troco.configure(text=f"Falta: R$ {abs(troco):.2f}", text_color="#C0392B")
-                self.btn_confirmar_dinheiro.configure(state="disabled", fg_color="gray")
-        except:
-            self.lbl_troco.configure(text="Valor Inválido", text_color="gray")
-            self.btn_confirmar_dinheiro.configure(state="disabled", fg_color="gray")
-
-    def confirmar_pagamento(self, metodo):
-        self.finalizar_venda_banco(metodo)
-        self.janela_pag.destroy()
-
-    # --- SIMULAÇÃO DE PIX ---
     def tela_pix_espera(self):
         self.janela_pag.destroy()
         
@@ -427,7 +376,6 @@ class CaixaFrame(ctk.CTkFrame):
         self.pontos = 0
         self.animar_texto_espera()
 
-        # Botão de Simulação
         ctk.CTkButton(self.win_pix, text="(DEV) Simular Pagamento Aprovado", fg_color="#555", 
                       command=self.simular_aprovacao_pix).pack(side="bottom", pady=20)
 
@@ -442,6 +390,25 @@ class CaixaFrame(ctk.CTkFrame):
         self.lbl_status_pix.configure(text="✅ PAGAMENTO APROVADO!", text_color="#2ECC71")
         self.win_pix.update()
         self.after(1000, lambda: [self.win_pix.destroy(), self.finalizar_venda_banco("Pix")])
+
+    def calcular_troco_tempo_real(self, event):
+        texto = self.entry_recebido.get().replace(",", ".")
+        try:
+            recebido = float(texto)
+            troco = recebido - self.total_a_pagar
+            if troco >= 0:
+                self.lbl_troco.configure(text=f"Troco: R$ {troco:.2f}", text_color=self.cor_destaque)
+                self.btn_confirmar_dinheiro.configure(state="normal", fg_color=self.cor_destaque)
+            else:
+                self.lbl_troco.configure(text=f"Falta: R$ {abs(troco):.2f}", text_color="#C0392B")
+                self.btn_confirmar_dinheiro.configure(state="disabled", fg_color="gray")
+        except:
+            self.lbl_troco.configure(text="Valor Inválido", text_color="gray")
+            self.btn_confirmar_dinheiro.configure(state="disabled", fg_color="gray")
+
+    def confirmar_pagamento(self, metodo):
+        self.finalizar_venda_banco(metodo)
+        self.janela_pag.destroy()
 
     def finalizar_venda_banco(self, metodo_pagamento):
         itens_validos = [i for i in self.carrinho if i['qtd'] > 0]

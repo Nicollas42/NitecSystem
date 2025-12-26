@@ -191,5 +191,19 @@
         ],
         "operador": "Carlos Dono",
         "pagamento": "Pix"
+    },
+    {
+        "id": 1766789695,
+        "data": "26/12/2025 19:54",
+        "total": 369.0,
+        "itens": [
+            {
+                "produto": "123",
+                "qtd": 3.0,
+                "total": 369.0
+            }
+        ],
+        "operador": "Carlos Dono",
+        "pagamento": "Pix"
     }
 ]
