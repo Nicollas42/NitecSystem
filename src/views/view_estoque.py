@@ -9,18 +9,18 @@ class EstoqueFrame(ctk.CTkFrame):
         super().__init__(master)
         self.voltar_menu = callback_voltar
         self.controller = EstoqueController()
+        self.janela_ajuda = None # Controle para não abrir várias janelas de ajuda
         
         # Dados em Memória
         self.produtos = database.carregar_produtos()
         
-        # Configura estilo visual das tabelas para o Modo Escuro
+        # Configura estilo visual das tabelas
         self.estilizar_tabelas()
         
         self.montar_layout()
         self.atualizar_tabelas()
 
     def estilizar_tabelas(self):
-        """Força o Treeview a ter cores escuras compatíveis com o tema"""
         style = ttk.Style()
         style.theme_use("clam")
         
@@ -57,24 +57,26 @@ class EstoqueFrame(ctk.CTkFrame):
         self.tabview.pack(fill="both", expand=True, padx=20, pady=10)
 
         self.tab_cadastro = self.tabview.add("📝 Cadastro / Edição")
-        self.tab_mov = self.tabview.add("🔄 Movimentação (Fundo/Loja)")
+        self.tab_mov = self.tabview.add("🔄 Movimentação")
         self.tab_lista = self.tabview.add("📋 Visão Geral")
+        self.tab_hist = self.tabview.add("📜 Histórico Mov")
 
         self.montar_aba_cadastro()
         self.montar_aba_movimentacao()
         self.montar_aba_lista()
+        self.montar_aba_historico()
 
     def montar_aba_cadastro(self):
         container = ctk.CTkFrame(self.tab_cadastro, fg_color="transparent")
         container.pack(fill="both", expand=True)
 
-        # --- ESQUERDA: FORMULÁRIO ---
+        # Esquerda
         form_frame = ctk.CTkFrame(container, border_width=1, border_color="#444")
         form_frame.pack(side="left", fill="both", expand=True, padx=(0, 10), pady=10)
         
         ctk.CTkLabel(form_frame, text="Dados do Produto", font=("Arial", 16, "bold"), text_color="#2CC985").grid(row=0, column=0, columnspan=2, pady=15, padx=15, sticky="w")
 
-        self.criar_label_input(form_frame, "Código (Barras/Interno):", 1, 0)
+        self.criar_label_input(form_frame, "Código:", 1, 0)
         self.ent_cod = ctk.CTkEntry(form_frame, placeholder_text="Ex: 1001")
         self.ent_cod.grid(row=2, column=0, padx=15, pady=(0, 10), sticky="ew")
 
@@ -108,7 +110,7 @@ class EstoqueFrame(ctk.CTkFrame):
         form_frame.grid_columnconfigure(0, weight=2)
         form_frame.grid_columnconfigure(1, weight=1)
 
-        # --- DIREITA: LISTA RÁPIDA ---
+        # Direita
         list_frame = ctk.CTkFrame(container, width=300)
         list_frame.pack(side="right", fill="y", pady=10)
         
@@ -179,7 +181,6 @@ class EstoqueFrame(ctk.CTkFrame):
 
         cols = ("cod", "nome", "cat", "un", "min", "est_fundo", "est_frente")
         self.tree_full = ttk.Treeview(self.tab_lista, columns=cols, show="headings")
-        
         self.configurar_colunas_tabela()
         self.tree_full.bind("<Control-c>", self.copiar_selecao)
         
@@ -188,11 +189,110 @@ class EstoqueFrame(ctk.CTkFrame):
         scrollbar.pack(side="right", fill="y")
         self.tree_full.pack(fill="both", expand=True, padx=10, pady=(0, 10))
 
+    def montar_aba_historico(self):
+        # Container
+        filter_frame = ctk.CTkFrame(self.tab_hist)
+        filter_frame.pack(fill="x", padx=10, pady=10)
+        
+        ctk.CTkLabel(filter_frame, text="Extrato Completo de Movimentações", font=("Arial", 14, "bold")).pack(side="left", padx=10)
+        
+        # --- BOTÃO DE AJUDA AGORA AZUL ---
+        ctk.CTkButton(filter_frame, text="?", width=30, fg_color="#2980B9", hover_color="#1F618D", 
+                      command=self.mostrar_ajuda_historico).pack(side="left", padx=5)
+        # ---------------------------------
+
+        ctk.CTkButton(filter_frame, text="🔄 Atualizar Histórico", width=150, 
+                      command=self.atualizar_historico).pack(side="right", padx=10)
+
+        # Coluna 'valor'
+        cols = ("data", "tipo", "produto", "qtd", "valor", "usuario", "motivo")
+        self.tree_hist = ttk.Treeview(self.tab_hist, columns=cols, show="headings")
+        
+        self.tree_hist.heading("data", text="DATA/HORA")
+        self.tree_hist.heading("tipo", text="TIPO")
+        self.tree_hist.heading("produto", text="PRODUTO")
+        self.tree_hist.heading("qtd", text="QTD")
+        self.tree_hist.heading("valor", text="VALOR TOTAL") 
+        self.tree_hist.heading("usuario", text="USUÁRIO")
+        self.tree_hist.heading("motivo", text="MOTIVO / DETALHE")
+
+        self.tree_hist.column("data", width=140, anchor="center")
+        self.tree_hist.column("tipo", width=140, anchor="center")
+        self.tree_hist.column("produto", width=220, anchor="w")
+        self.tree_hist.column("qtd", width=80, anchor="center")
+        self.tree_hist.column("valor", width=100, anchor="e") 
+        self.tree_hist.column("usuario", width=100, anchor="center")
+        self.tree_hist.column("motivo", width=200, anchor="w")
+
+        scroll = ctk.CTkScrollbar(self.tab_hist, command=self.tree_hist.yview)
+        self.tree_hist.configure(yscroll=scroll.set)
+        scroll.pack(side="right", fill="y")
+        self.tree_hist.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+
+    def mostrar_ajuda_historico(self):
+        """Abre uma janela modal não-bloqueante com explicações"""
+        
+        if self.janela_ajuda is not None and self.janela_ajuda.winfo_exists():
+            self.janela_ajuda.lift()
+            self.janela_ajuda.focus_force()
+            return
+
+        self.janela_ajuda = ctk.CTkToplevel(self)
+        self.janela_ajuda.title("Legenda e Regras do Estoque")
+        self.janela_ajuda.geometry("500x600")
+        
+        # --- CORREÇÃO DO FOCO (Mantém janela na frente sem bloquear) ---
+        self.janela_ajuda.transient(self) # Faz ser filha da janela principal
+        self.janela_ajuda.lift()          # Traz para cima
+        self.janela_ajuda.focus_force()   # Dá o foco
+        # -------------------------------------------------------------
+        
+        # Título
+        ctk.CTkLabel(self.janela_ajuda, text="📖 GUIA RÁPIDO", font=("Arial", 20, "bold"), text_color="#2CC985").pack(pady=20)
+        
+        # Seção de Cores
+        frame_cores = ctk.CTkFrame(self.janela_ajuda)
+        frame_cores.pack(fill="x", padx=20, pady=10)
+        
+        ctk.CTkLabel(frame_cores, text="🎨 ENTENDA AS CORES", font=("Arial", 14, "bold")).pack(pady=10)
+
+        def linha_legenda(cor, titulo, desc):
+            row = ctk.CTkFrame(frame_cores, fg_color="transparent")
+            row.pack(fill="x", pady=5, padx=10)
+            ctk.CTkLabel(row, text="      ", fg_color=cor, width=40, corner_radius=6).pack(side="left", padx=5)
+            ctk.CTkLabel(row, text=titulo, font=("Arial", 12, "bold"), width=120, anchor="w").pack(side="left", padx=5)
+            ctk.CTkLabel(row, text=desc, text_color="#ccc", anchor="w").pack(side="left", fill="x", expand=True)
+
+        linha_legenda("#e6b0aa", "SAÍDA VENDA", "Venda realizada no caixa.")
+        linha_legenda("#abebc6", "ENTRADA", "Compra ou Produção.")
+        linha_legenda("#d7bde2", "TRANSFERÊNCIA", "Movimento Fundo -> Frente.")
+        linha_legenda("#fad7a0", "PERDA", "Quebra, Vencimento ou Uso.")
+
+        # Seção de Regras
+        frame_regras = ctk.CTkFrame(self.janela_ajuda)
+        frame_regras.pack(fill="both", expand=True, padx=20, pady=20)
+        
+        ctk.CTkLabel(frame_regras, text="⚙️ REGRAS DO SISTEMA", font=("Arial", 14, "bold")).pack(pady=10)
+        
+        texto_regras = """
+1. ESTOQUE DUPLO (FRENTE vs FUNDO):
+• FRENTE (Loja): É o estoque que o cliente vê. O Caixa só consegue vender o que está aqui.
+• FUNDO (Depósito): É o estoque fechado. Deve ser transferido para a frente antes de vender.
+
+2. FLUXO IDEAL:
+• Chegou Mercadoria: Lance ENTRADA no FUNDO.
+• Prateleira Vazia: Faça TRANSFERÊNCIA (Fundo -> Frente).
+• Venda: O sistema baixa automaticamente da FRENTE.
+
+3. REPOSIÇÃO DE EMERGÊNCIA:
+• Se tentar vender algo que acabou na Frente mas tem no Fundo, o sistema sugere uma transferência automática (aparece Roxo no histórico).
+"""
+        lbl_regras = ctk.CTkLabel(frame_regras, text=texto_regras, justify="left", anchor="nw", padx=10, font=("Consolas", 12))
+        lbl_regras.pack(fill="both", expand=True)
+
     def configurar_colunas_tabela(self):
-        """Define os títulos, larguras e alinhamentos padrões da tabela"""
         titulos = ["ID", "PRODUTO", "CATEGORIA", "UN", "MÍNIMO", "NO FUNDO", "NA FRENTE"]
         cols = ("cod", "nome", "cat", "un", "min", "est_fundo", "est_frente")
-        
         for c, t in zip(cols, titulos):
             self.tree_full.heading(c, text=t)
 
@@ -205,7 +305,6 @@ class EstoqueFrame(ctk.CTkFrame):
         self.tree_full.column("est_frente", width=100, anchor="center")
 
     def salvar_cadastro(self):
-        """Coleta e valida dados para salvar o produto"""
         dados = {
             "id": self.ent_cod.get().strip(),
             "nome": self.ent_nome.get().strip(),
@@ -225,7 +324,6 @@ class EstoqueFrame(ctk.CTkFrame):
             self.atualizar_tabelas()
 
     def realizar_movimento(self):
-        """Envia movimentação para o controller"""
         nome = self.combo_mov_prod.get()
         qtd = self.ent_mov_qtd.get().replace(",", ".")
         motivo = self.ent_mov_motivo.get()
@@ -243,14 +341,12 @@ class EstoqueFrame(ctk.CTkFrame):
                 return
 
     def abrir_popup_transferencia(self):
-        """Janela flutuante para Reposição Rápida"""
         dialog = ctk.CTkToplevel(self)
         dialog.title("Reposição de Loja")
         dialog.geometry("400x450")
         dialog.grab_set()
 
         ctk.CTkLabel(dialog, text="REPOSIÇÃO RÁPIDA", font=("Arial", 16, "bold"), text_color="#8E44AD").pack(pady=20)
-        
         ctk.CTkLabel(dialog, text="Bipe o Código ou Selecione:").pack(pady=(10,0))
         combo_prod = ctk.CTkComboBox(dialog, values=self.listar_nomes_produtos(), width=300)
         combo_prod.pack(pady=10)
@@ -279,7 +375,6 @@ class EstoqueFrame(ctk.CTkFrame):
         ctk.CTkButton(dialog, text="TRANSFERIR AGORA", fg_color="#27AE60", height=45, command=confirmar).pack(pady=30)
 
     def atualizar_tabelas(self):
-        """Recarrega dados e aplica cores"""
         self.produtos = database.carregar_produtos()
         for tree in [self.tree_resumo, self.tree_full]:
             for i in tree.get_children(): tree.delete(i)
@@ -306,6 +401,64 @@ class EstoqueFrame(ctk.CTkFrame):
             ), tags=(tag,))
         
         self.combo_mov_prod.configure(values=sorted(nomes))
+        self.atualizar_historico()
+
+    def atualizar_historico(self):
+        """Carrega e formata o histórico de movimentações com VALORES R$"""
+        for i in self.tree_hist.get_children():
+            self.tree_hist.delete(i)
+
+        try:
+            movimentos = database.carregar_json(database.ARQ_MOVIMENTOS)
+        except:
+            movimentos = []
+
+        movimentos = movimentos[::-1]
+
+        tag_colors = {
+            "SAIDA_VENDA": "#e6b0aa",
+            "ENTRADA_FUNDO": "#abebc6",
+            "ENTRADA_FRENTE": "#abebc6",
+            "TRANSFERENCIA": "#d7bde2",
+            "PERDA_FUNDO": "#fad7a0",
+            "PERDA_FRENTE": "#fad7a0"
+        }
+        
+        for tipo, cor in tag_colors.items():
+            self.tree_hist.tag_configure(tipo, background=cor, foreground="black")
+
+        for mov in movimentos:
+            # 1. Formata Quantidade
+            cod_prod = mov.get('cod')
+            prod_dados = self.produtos.get(cod_prod, {})
+            unidade = prod_dados.get('unidade', 'UN')
+            qtd_raw = float(mov.get('qtd', 0))
+            
+            if unidade in ['KG', 'L', 'M']:
+                qtd_fmt = f"{qtd_raw:.3f}"
+            else:
+                if qtd_raw.is_integer():
+                    qtd_fmt = f"{int(qtd_raw)}"
+                else:
+                    qtd_fmt = f"{qtd_raw:.2f}"
+
+            # 2. Calcula Valor Total (Qtd * Preço Atual)
+            preco_atual = prod_dados.get('preco', 0.0)
+            valor_total = qtd_raw * preco_atual
+            
+            # Formata Valor (Se negativo, mantém sinal)
+            valor_fmt = f"R$ {valor_total:.2f}"
+
+            tipo_mov = mov.get('tipo', '')
+            self.tree_hist.insert("", "end", values=(
+                mov.get('data', '-'),
+                tipo_mov,
+                mov.get('nome', '-'),
+                qtd_fmt,
+                valor_fmt,
+                mov.get('usuario', '-'),
+                mov.get('motivo', '-')
+            ), tags=(tipo_mov,))
 
     def resetar_e_atualizar(self):
         self.configurar_colunas_tabela()
