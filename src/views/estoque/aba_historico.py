@@ -376,8 +376,8 @@ class AbaHistorico(ctk.CTkFrame):
         }
         
         for col, titulo in titulos.items():
-            # Define o texto inicial com o ícone neutro ▲▼
-            self.tree.heading(col, text=f"{titulo} ▲▼", command=lambda c=col: self.ordenar_coluna(c))
+            # Define o texto inicial com o ícone neutro 
+            self.tree.heading(col, text=f"{titulo} ↕", command=lambda c=col: self.ordenar_coluna(c))
             self.tree.column(col, anchor="center")
         
         self.tree.column("data", width=140); self.tree.column("produto", width=220)
@@ -410,11 +410,11 @@ class AbaHistorico(ctk.CTkFrame):
         }
         
         for col, texto_base in titulos.items():
-            icone = " ▲▼" # Padrão neutro
+            icone = "↕" # Padrão neutro
             
             if col == self.sort_col:
-                if self.sort_dir == "asc": icone = " ▲"
-                elif self.sort_dir == "desc": icone = " ▼"
+                if self.sort_dir == "asc": icone = " ↑"
+                elif self.sort_dir == "desc": icone = " ↓"
             
             self.tree.heading(col, text=f"{texto_base}{icone}")
 

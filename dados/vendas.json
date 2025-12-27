@@ -1,1 +1,69 @@
-[]
+[
+    {
+        "id": 1766829126,
+        "data": "27/12/2025 06:52",
+        "total": 30.419999999999998,
+        "itens": [
+            {
+                "produto": "PÃO FRANCÊS",
+                "qtd": 0.5,
+                "total": 8.45
+            },
+            {
+                "produto": "PÃO DE QUEIJO",
+                "qtd": 0.3,
+                "total": 11.969999999999999
+            },
+            {
+                "produto": "CAFÉ EXPRESSO",
+                "qtd": 2,
+                "total": 10.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Débito"
+    },
+    {
+        "id": 1766829126,
+        "data": "27/12/2025 06:52",
+        "total": 82.5,
+        "itens": [
+            {
+                "produto": "COXINHA DE FRANGO",
+                "qtd": 5,
+                "total": 32.5
+            },
+            {
+                "produto": "COCA COLA 2L",
+                "qtd": 2,
+                "total": 28.0
+            },
+            {
+                "produto": "BOLO DE CENOURA",
+                "qtd": 1,
+                "total": 22.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Pix"
+    },
+    {
+        "id": 1766829126,
+        "data": "27/12/2025 06:52",
+        "total": 40.9,
+        "itens": [
+            {
+                "produto": "PÃO FRANCÊS",
+                "qtd": 1.0,
+                "total": 16.9
+            },
+            {
+                "produto": "MISTO QUENTE",
+                "qtd": 2,
+                "total": 24.0
+            }
+        ],
+        "operador": "Carlos Dono",
+        "pagamento": "Dinheiro"
+    }
+]
