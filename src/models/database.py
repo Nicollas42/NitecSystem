@@ -36,7 +36,7 @@ def carregar_produtos():
 def salvar_produtos(dados):
     salvar_json(ARQ_PRODUTOS, dados)
 
-# --- MOVIMENTAÇÕES (NOVO) ---
+# --- MOVIMENTAÇÕES ---
 def registrar_movimentacao(tipo, produto_id, nome, qtd, motivo, usuario, saldo_anterior, saldo_novo):
     """O Livro Razão do Estoque"""
     log = {
@@ -56,7 +56,7 @@ def registrar_movimentacao(tipo, produto_id, nome, qtd, motivo, usuario, saldo_a
 
 # --- VENDAS ---
 def registrar_venda(total, itens, operador, pagamento):
-    # Salva Venda
+    # 1. Registro Financeiro
     vendas = carregar_json(ARQ_VENDAS)
     registro = {
         "id": int(datetime.now().timestamp()),
@@ -69,18 +69,33 @@ def registrar_venda(total, itens, operador, pagamento):
     vendas.append(registro)
     salvar_json(ARQ_VENDAS, vendas)
     
-    # Baixa Estoque (Venda Simples)
+    # 2. Baixa de Estoque (FRENTE) - APENAS UMA VEZ
     produtos = carregar_produtos()
     for item in itens:
-        # Busca por nome (ideal seria ID, mas mantendo compatibilidade)
         for pid, dados in produtos.items():
             if dados['nome'] == item['produto']:
-                qtd_venda = float(item['qtd'])
-                saldo_ant = dados.get('estoque', 0)
-                saldo_novo = saldo_ant - qtd_venda
-                
-                dados['estoque'] = saldo_novo
-                registrar_movimentacao("VENDA", pid, dados['nome'], -qtd_venda, "Venda PDV", operador, saldo_ant, saldo_novo)
+                # Só baixa se o produto estiver configurado para controlar estoque
+                # (Ex: Pão Francês pode estar como False, Água como True)
+                if dados.get('controla_estoque', True):
+                    qtd_venda = float(item['qtd'])
+                    
+                    # Usa 'estoque_atual' que representa a FRENTE da loja
+                    saldo_ant = dados.get('estoque_atual', 0.0)
+                    saldo_novo = saldo_ant - qtd_venda
+                    
+                    dados['estoque_atual'] = round(saldo_novo, 4)
+                    
+                    # Registra a saída no histórico para auditoria
+                    registrar_movimentacao(
+                        "SAIDA_VENDA", 
+                        pid, 
+                        dados['nome'], 
+                        -qtd_venda, 
+                        "Venda PDV", 
+                        operador, 
+                        saldo_ant, 
+                        saldo_novo
+                    )
                 break
     salvar_produtos(produtos)
 

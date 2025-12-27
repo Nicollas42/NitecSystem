@@ -1,18 +1,22 @@
 # src/views/view_caixa.py
+
 import customtkinter as ctk
 from tkinter import ttk, messagebox
 from datetime import datetime
 import time
+from src.controllers.estoque_controller import EstoqueController
 
 # --- CORREÇÃO DOS IMPORTS ---
 from src.controllers import config_manager
 from src.models import database
+
 
 class CaixaFrame(ctk.CTkFrame):
     def __init__(self, master, usuario_dados, callback_voltar):
         super().__init__(master)
         self.usuario = usuario_dados
         self.voltar_menu = callback_voltar
+        self.estoque_ctrl = EstoqueController() 
         
         self.config = config_manager.carregar_config()
         self.cor_destaque = self.config["cor_destaque"]
@@ -131,6 +135,7 @@ class CaixaFrame(ctk.CTkFrame):
         if not cod: return
         self.entry_cod.delete(0, 'end')
         
+        # Suporte a balança (Código começando com 2)
         if cod.startswith("2") and len(cod) == 12:
             plu = str(int(cod[1:6]))
             if plu in self.produtos_db:
@@ -140,16 +145,25 @@ class CaixaFrame(ctk.CTkFrame):
 
         if cod in self.produtos_db:
             prod = self.produtos_db[cod]
-            if prod['un'] in ['KG', 'G']: self.popup_peso(prod, cod)
-            else: self.lancar(prod, cod, 1)
+            # CORREÇÃO: Alterado de 'un' para 'unidade'
+            unidade = prod.get('unidade', 'UN') 
+            if unidade in ['KG', 'G']: 
+                self.popup_peso(prod, cod)
+            else: 
+                self.lancar(prod, cod, 1)
         else:
             self.master.bell()
     
     def popup_peso(self, prod, cod):
-        unidade = prod['un']
+        # CORREÇÃO: Alterado de 'un' para 'unidade'
+        unidade = prod.get('unidade', 'UN')
         titulo = f"Peso para {prod['nome']} ({unidade}):"
         d = ctk.CTkInputDialog(text=titulo, title="Pesagem")
-        d.geometry(f"+{self.winfo_rootx() + 300}+{self.winfo_rooty() + 200}")
+        # Centraliza o popup
+        try:
+            d.geometry(f"+{self.winfo_rootx() + 300}+{self.winfo_rooty() + 200}")
+        except: pass
+        
         peso_input = d.get_input()
         if peso_input: 
             try: 
@@ -158,41 +172,89 @@ class CaixaFrame(ctk.CTkFrame):
             except: pass
         self.entry_cod.focus_set()
 
+
     def lancar(self, prod, cod, qtd):
+        # 1. Verifica itens no carrinho
         item_existente = None
         for item in self.carrinho:
             if item['codigo'] == cod:
                 item_existente = item
                 break
         
-        est_atual = prod.get("estoque", 0)
+        # 2. Dados de Estoque
+        est_frente = prod.get("estoque_atual", 0.0)
+        unidade = prod.get('unidade', 'UN')
+        controla = prod.get('controla_estoque', True)
+        
+        # 3. Calcula total desejado
+        qtd_total_tentativa = qtd
+        if item_existente: 
+            qtd_total_tentativa += item_existente['qtd']
+
+        # --- LÓGICA DE REPOSIÇÃO AUTOMÁTICA NO CAIXA ---
+        if controla and est_frente < qtd_total_tentativa:
+            qtd_faltante = qtd_total_tentativa - est_frente
+            est_fundo = prod.get("estoque_fundo", 0.0)
+            
+            # Se tem saldo no fundo para cobrir o buraco
+            if est_fundo >= qtd_faltante:
+                msg = (f"Estoque da FRENTE insuficiente (Faltam {qtd_faltante} {unidade}).\n\n"
+                       f"Há {est_fundo} {unidade} no FUNDO.\n"
+                       f"Deseja transferir {qtd_faltante} {unidade} agora e continuar a venda?")
+                
+                # Pergunta ao operador
+                if messagebox.askyesno("Reposição Rápida", msg):
+                    # Realiza a transferência automática
+                    ok, resp = self.estoque_ctrl.transferir_fundo_para_frente(
+                        cod, qtd_faltante, self.usuario['nome'], motivo="🚨 REPOSIÇÃO DIRETA CAIXA"
+                    )
+                    
+                    if ok:
+                        # Atualiza a memória do caixa com os novos saldos para permitir a venda
+                        prod['estoque_atual'] += qtd_faltante
+                        prod['estoque_fundo'] -= qtd_faltante
+                        messagebox.showinfo("Resolvido", "Produto transferido! Prosseguindo com a venda...")
+                    else:
+                        messagebox.showerror("Erro", resp)
+                        return
+                else:
+                    self.entry_cod.focus_set()
+                    return # Operador negou a transferência
+            else:
+                # Não tem nem no fundo
+                messagebox.showwarning(
+                    "Estoque Crítico", 
+                    f"Produto em falta na Loja e no Depósito!\n"
+                    f"Frente: {est_frente} | Fundo: {est_fundo}"
+                )
+                self.entry_cod.focus_set()
+                return
+        # ------------------------------------------------
+
         nome_exibicao = prod['nome']
-        qtd_total_validacao = qtd
-        if item_existente: qtd_total_validacao += item_existente['qtd']
-
-        if est_atual <= 0: nome_exibicao += " ⚠️ [SEM ESTOQUE]"
-        elif est_atual < qtd_total_validacao: nome_exibicao += " ⚠️ [ESTOQUE BAIXO]"
-
         iid_linha = None 
 
         if item_existente:
             nova_qtd = item_existente['qtd'] + qtd
             novo_total = round(nova_qtd * prod['preco'], 2)
-            
             item_existente['qtd'] = nova_qtd
             item_existente['total'] = novo_total
+            qtd_fmt = f"{nova_qtd:.3f}" if unidade in ['KG', 'G'] else f"{int(nova_qtd)}"
             
-            qtd_fmt = f"{nova_qtd:.3f}" if prod['un'] in ['KG', 'G'] else f"{int(nova_qtd)}"
-            
-            self.tree.item(item_existente['tree_id'], values=(item_existente['id_visual'], nome_exibicao, qtd_fmt, prod['un'], f"{prod['preco']:.2f}", f"{novo_total:.2f}"))
+            self.tree.item(item_existente['tree_id'], values=(
+                item_existente['id_visual'], nome_exibicao, qtd_fmt, unidade, 
+                f"{prod['preco']:.2f}", f"{novo_total:.2f}"
+            ))
             iid_linha = item_existente['tree_id']
-            
         else:
             self.contador_id += 1
             total = round(qtd * prod['preco'], 2)
-            qtd_fmt = f"{qtd:.3f}" if prod['un'] in ['KG', 'G'] else f"{int(qtd)}"
+            qtd_fmt = f"{qtd:.3f}" if unidade in ['KG', 'G'] else f"{int(qtd)}"
             
-            iid_linha = self.tree.insert('', 'end', values=(self.contador_id, nome_exibicao, qtd_fmt, prod['un'], f"{prod['preco']:.2f}", f"{total:.2f}"))
+            iid_linha = self.tree.insert('', 'end', values=(
+                self.contador_id, nome_exibicao, qtd_fmt, unidade, 
+                f"{prod['preco']:.2f}", f"{total:.2f}"
+            ))
             
             self.carrinho.append({
                 'tree_id': iid_linha,
@@ -202,16 +264,14 @@ class CaixaFrame(ctk.CTkFrame):
                 'qtd': qtd,
                 'preco': prod['preco'],
                 'total': total,
-                'un': prod['un']
+                'un': unidade
             })
 
         self.atualizar_total()
         self.tree.yview_moveto(1)
         self.aplicar_destaque(iid_linha)
-        try: self.tree.selection_remove(self.tree.selection())
-        except: pass
         self.entry_cod.focus_set()
-
+    
     def aplicar_destaque(self, iid_atual):
         if self.ultimo_item_focado and self.ultimo_item_focado != iid_atual:
             try:

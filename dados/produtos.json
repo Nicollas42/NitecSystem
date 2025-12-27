@@ -3,12 +3,27 @@
         "nome": "123",
         "preco": 123.0,
         "un": "UN",
-        "estoque": 120.0
+        "estoque": 120.0,
+        "estoque_atual": 28.0
     },
     "7891200007899": {
         "nome": "durepox",
         "preco": 10.0,
         "un": "UN",
         "estoque": 14.0
+    },
+    "40028922": {
+        "id": "40028922",
+        "nome": "AGUA MINERAL",
+        "categoria": "Panificação",
+        "tipo": "VENDA (Produto Final)",
+        "unidade": "UN",
+        "controla_estoque": true,
+        "estoque_atual": -5.0,
+        "estoque_minimo": 2.0,
+        "preco": 3.5,
+        "custo_medio": 0.0,
+        "ativo": true,
+        "estoque_fundo": 6.0
     }
 }

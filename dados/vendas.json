@@ -205,5 +205,145 @@
         ],
         "operador": "Carlos Dono",
         "pagamento": "Pix"
+    },
+    {
+        "id": 1766795660,
+        "data": "26/12/2025 21:34",
+        "total": 17.5,
+        "itens": [
+            {
+                "produto": "AGUA MINERAL",
+                "qtd": 5,
+                "total": 17.5
+            }
+        ],
+        "operador": "Carlos Dono",
+        "pagamento": "Crédito"
+    },
+    {
+        "id": 1766795680,
+        "data": "26/12/2025 21:34",
+        "total": 31.5,
+        "itens": [
+            {
+                "produto": "AGUA MINERAL",
+                "qtd": 9,
+                "total": 31.5
+            }
+        ],
+        "operador": "Carlos Dono",
+        "pagamento": "Pix"
+    },
+    {
+        "id": 1766795703,
+        "data": "26/12/2025 21:35",
+        "total": 31.5,
+        "itens": [
+            {
+                "produto": "AGUA MINERAL",
+                "qtd": 9,
+                "total": 31.5
+            }
+        ],
+        "operador": "Carlos Dono",
+        "pagamento": "Pix"
+    },
+    {
+        "id": 1766795718,
+        "data": "26/12/2025 21:35",
+        "total": 17.5,
+        "itens": [
+            {
+                "produto": "AGUA MINERAL",
+                "qtd": 5,
+                "total": 17.5
+            }
+        ],
+        "operador": "Carlos Dono",
+        "pagamento": "Crédito"
+    },
+    {
+        "id": 1766800186,
+        "data": "26/12/2025 22:49",
+        "total": 115.5,
+        "itens": [
+            {
+                "produto": "AGUA MINERAL",
+                "qtd": 33,
+                "total": 115.5
+            }
+        ],
+        "operador": "Carlos Dono",
+        "pagamento": "Débito"
+    },
+    {
+        "id": 1766801040,
+        "data": "26/12/2025 23:04",
+        "total": 14.0,
+        "itens": [
+            {
+                "produto": "AGUA MINERAL",
+                "qtd": 4,
+                "total": 14.0
+            }
+        ],
+        "operador": "Carlos Dono",
+        "pagamento": "Débito"
+    },
+    {
+        "id": 1766801113,
+        "data": "26/12/2025 23:05",
+        "total": 10.5,
+        "itens": [
+            {
+                "produto": "AGUA MINERAL",
+                "qtd": 3,
+                "total": 10.5
+            }
+        ],
+        "operador": "Carlos Dono",
+        "pagamento": "Débito"
+    },
+    {
+        "id": 1766801162,
+        "data": "26/12/2025 23:06",
+        "total": 7.0,
+        "itens": [
+            {
+                "produto": "AGUA MINERAL",
+                "qtd": 2,
+                "total": 7.0
+            }
+        ],
+        "operador": "Carlos Dono",
+        "pagamento": "Débito"
+    },
+    {
+        "id": 1766802098,
+        "data": "26/12/2025 23:21",
+        "total": 28.0,
+        "itens": [
+            {
+                "produto": "AGUA MINERAL",
+                "qtd": 8,
+                "total": 28.0
+            }
+        ],
+        "operador": "Carlos Dono",
+        "pagamento": "Débito"
+    },
+    {
+        "id": 1766802208,
+        "data": "26/12/2025 23:23",
+        "total": 17.5,
+        "itens": [
+            {
+                "produto": "AGUA MINERAL",
+                "qtd": 5,
+                "total": 17.5
+            }
+        ],
+        "operador": "Carlos Dono",
+        "pagamento": "Débito"
     }
 ]

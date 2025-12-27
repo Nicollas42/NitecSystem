@@ -2,140 +2,156 @@
 import datetime
 from src.models import database
 
-# Tipos de Movimentação
-TIPO_ENTRADA_COMPRA = "ENTRADA_COMPRA" # Nota Fiscal
+TIPO_ENTRADA_COMPRA = "ENTRADA_COMPRA" 
 TIPO_SAIDA_VENDA = "SAIDA_VENDA"
-TIPO_SAIDA_PRODUCAO = "SAIDA_PRODUCAO" # Usado na receita
-TIPO_ENTRADA_PRODUCAO = "ENTRADA_PRODUCAO" # Produto final pronto
+TIPO_SAIDA_PRODUCAO = "SAIDA_PRODUCAO" 
+TIPO_ENTRADA_PRODUCAO = "ENTRADA_PRODUCAO" 
 TIPO_AJUSTE_PERDA = "SAIDA_PERDA"
 TIPO_AJUSTE_SOBRA = "ENTRADA_AJUSTE"
 
 class EstoqueController:
-    
     def __init__(self):
-        self.db = database # Referência ao módulo de banco de dados
+        self.db = database
 
-    def cadastrar_produto(self, dados_produto):
-        """
-        Cria um produto com a estrutura completa profissional.
-        """
+    def salvar_produto(self, dados_produto):
+        produtos = self.db.carregar_produtos()
+        cod = dados_produto['id']
+
+        # Preserva os dois saldos se o produto já existir
+        estoque_frente = produtos[cod].get('estoque_atual', 0.0) if cod in produtos else 0.0
+        estoque_fundo = produtos[cod].get('estoque_fundo', 0.0) if cod in produtos else 0.0
+
         novo_produto = {
-            "id": dados_produto['id'],
+            "id": cod,
             "nome": dados_produto['nome'].strip().upper(),
-            "categoria": dados_produto['categoria'],
-            "tipo": dados_produto['tipo'], # 'VENDA', 'INSUMO', 'AMBOS'
-            "unidade": dados_produto['unidade'], # 'KG', 'UN', 'L'
+            "unidade": dados_produto.get('unidade', 'UN'), 
             "controla_estoque": dados_produto.get('controla_estoque', True),
-            "estoque_atual": 0.0,
-            "estoque_minimo": float(dados_produto.get('estoque_minimo', 0)),
-            "custo_medio": 0.0, # Começa zerado
+            "estoque_atual": estoque_frente, # FRENTE DA LOJA
+            "estoque_fundo": estoque_fundo,   # DEPOSITO / FUNDO
+            "estoque_minimo": float(str(dados_produto.get('minimo', 0)).replace(',', '.')),
+            "preco": float(str(dados_produto.get('preco', 0)).replace(',', '.')),
             "ativo": True
         }
-        
-        # Salva no banco
-        produtos = self.db.carregar_produtos()
-        if dados_produto['id'] in produtos:
-            raise ValueError("ID já existe!")
-        
-        produtos[dados_produto['id']] = novo_produto
+        produtos[cod] = novo_produto
         self.db.salvar_produtos(produtos)
         return True
 
-    def realizar_movimentacao(self, produto_id, qtd, tipo_mov, custo_unitario=None, motivo="", usuario="sistema"):
-        """
-        A REGRA DE OURO: Nada muda o estoque sem passar por aqui.
-        Calcula custo médio ponderado na entrada.
-        Registra log.
-        """
+    def transferir_para_frente(self, produto_id, qtd, usuario):
+        """Move produtos do FUNDO para a FRENTE (Exposição)"""
+        produtos = self.db.carregar_produtos()
+        if produto_id not in produtos: return False, "Produto inexistente"
+        
+        prod = produtos[produto_id]
+        qtd_num = float(qtd)
+        
+        if prod['estoque_fundo'] < qtd_num:
+            return False, f"Saldo insuficiente no FUNDO ({prod['estoque_fundo']})"
+
+        # Lógica de transferência
+        prod['estoque_fundo'] -= qtd_num
+        prod['estoque_atual'] += qtd_num
+        
+        self.db.salvar_produtos(produtos)
+        self.db.registrar_movimentacao("TRANSFERENCIA", produto_id, prod['nome'], qtd_num, 
+                                      "Fundo -> Frente", usuario, prod['estoque_fundo']+qtd_num, prod['estoque_fundo'])
+        return True, "Transferência concluída!"
+
+
+    def transferir_fundo_para_frente(self, produto_id, qtd, usuario="admin", motivo=None):
+        """Move o saldo do estoque interno para a exposição com motivo personalizado"""
         produtos = self.db.carregar_produtos()
         
         if produto_id not in produtos:
-            raise ValueError("Produto não encontrado")
-        
+            return False, "Produto não encontrado."
+            
         prod = produtos[produto_id]
-        estoque_atual = prod['estoque_atual']
-        custo_atual = prod['custo_medio']
+        try:
+            qtd_num = float(str(qtd).replace(',', '.'))
+        except:
+            return False, "Quantidade inválida."
+
+        saldo_fundo = prod.get('estoque_fundo', 0.0)
+        saldo_frente = prod.get('estoque_atual', 0.0)
+
+        if saldo_fundo < qtd_num:
+            return False, f"Saldo insuficiente no FUNDO ({saldo_fundo})."
+
+        # Executa a transferência
+        prod['estoque_fundo'] = round(saldo_fundo - qtd_num, 4)
+        prod['estoque_atual'] = round(saldo_frente + qtd_num, 4)
         
-        # Lógica de Custo Médio (Apenas em entradas de compra)
-        if tipo_mov == TIPO_ENTRADA_COMPRA and custo_unitario is not None:
-            # Fórmula do Custo Médio Ponderado
-            novo_total_valor = (estoque_atual * custo_atual) + (qtd * custo_unitario)
-            nova_qtd_total = estoque_atual + qtd
-            
-            if nova_qtd_total > 0:
-                novo_custo_medio = novo_total_valor / nova_qtd_total
-            else:
-                novo_custo_medio = custo_unitario
-                
-            prod['custo_medio'] = round(novo_custo_medio, 4)
-            nova_qtd = nova_qtd_total
-            
-        else:
-            # Movimentações normais (saídas ou ajustes)
-            if "ENTRADA" in tipo_mov:
-                nova_qtd = estoque_atual + qtd
-            else:
-                nova_qtd = estoque_atual - qtd
-        
-        # Atualiza o Produto
-        prod['estoque_atual'] = round(nova_qtd, 4)
         self.db.salvar_produtos(produtos)
         
-        # LOG DA MOVIMENTAÇÃO (RASTREABILIDADE)
-        log = {
-            "data": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "produto_id": produto_id,
-            "produto_nome": prod['nome'],
-            "tipo": tipo_mov,
-            "quantidade": qtd,
-            "estoque_anterior": estoque_atual,
-            "estoque_novo": nova_qtd,
-            "custo_medio_momento": prod['custo_medio'],
-            "motivo": motivo,
-            "usuario": usuario
-        }
-        
-        self.db.registrar_movimentacao(log)
-        
-        # Checagem de Alerta
-        if prod['controla_estoque'] and nova_qtd <= prod['estoque_minimo']:
-            return {"status": "sucesso", "alerta": True, "msg": f"⚠️ ALERTA: {prod['nome']} abaixo do mínimo!"}
-            
-        return {"status": "sucesso", "alerta": False}
+        # Define o motivo automático se não for passado
+        motivo_final = motivo if motivo else "Fundo -> Frente"
 
+        # Registra com destaque para auditoria
+        self.db.registrar_movimentacao(
+            "TRANSFERENCIA", produto_id, prod['nome'], qtd_num, 
+            motivo_final, usuario, saldo_frente, prod['estoque_atual']
+        )
+        
+        return True, f"Transferência de {qtd_num} realizada!"
+    
+    
+    
+    def movimentar_estoque(self, produto_id, qtd, tipo_mov, motivo="", usuario="Admin", local="fundo"):
+        """
+        Realiza movimentações de estoque (ENTRADA, SAIDA, PERDA)
+        'local' pode ser 'frente' (estoque_atual) ou 'fundo' (estoque_fundo)
+        """
+        produtos = self.db.carregar_produtos()
+        if produto_id not in produtos:
+            return False, "Produto não encontrado."
+            
+        prod = produtos[produto_id]
+        chave_estoque = 'estoque_atual' if local == "frente" else 'estoque_fundo'
+        
+        try:
+            qtd_num = float(str(qtd).replace(',', '.'))
+        except:
+            return False, "Quantidade inválida."
+
+        saldo_anterior = prod.get(chave_estoque, 0.0)
+        
+        # Define se soma ou subtrai baseado no tipo
+        if tipo_mov == "ENTRADA":
+            novo_saldo = saldo_anterior + qtd_num
+        else: # SAIDA ou PERDA
+            novo_saldo = saldo_anterior - qtd_num
+
+        # Atualiza o saldo no dicionário
+        prod[chave_estoque] = round(novo_saldo, 4)
+        
+        self.db.salvar_produtos(produtos)
+        
+        # Log detalhado para o Livro Razão
+        self.db.registrar_movimentacao(
+            f"{tipo_mov}_{local.upper()}", produto_id, prod['nome'], qtd_num, 
+            motivo, usuario, saldo_anterior, novo_saldo
+        )
+        
+        return True, f"{tipo_mov} realizada no {local.upper()}. Novo saldo: {novo_saldo}"
+    
     def registrar_producao(self, id_produto_final, qtd_produzida, usuario):
         """
-        Produção Própria:
-        1. Olha a ficha técnica.
-        2. Remove os insumos do estoque.
-        3. Adiciona o produto final.
+        Funcionalidade de Produção Própria com baixa automática de insumos.
         """
-        fichas = self.db.carregar_fichas_tecnicas()
-        
-        if id_produto_final not in fichas:
-            raise ValueError("Este produto não tem Ficha Técnica cadastrada.")
+        # Esta função exige que você tenha o método carregar_fichas_tecnicas no seu database.py
+        try:
+            fichas = self.db.carregar_json(self.db.ARQ_SOBRAS) # Exemplo: Ajustar para caminho de fichas se existir
+            if id_produto_final not in fichas:
+                raise ValueError("Produto sem Ficha Técnica.")
+                
+            receita = fichas[id_produto_final]
+            fator = qtd_produzida / receita['rendimento']
             
-        receita = fichas[id_produto_final] # Ex: {"ingredientes": [{"id": "101", "qtd": 0.5}], "rendimento": 1}
-        fator = qtd_produzida / receita['rendimento']
-        
-        # 1. Consumir Insumos
-        for ingrediente in receita['ingredientes']:
-            qtd_necessaria = ingrediente['qtd'] * fator
-            
-            # Chama a movimentação de SAÍDA para cada insumo
-            self.realizar_movimentacao(
-                ingrediente['id'], 
-                qtd_necessaria, 
-                TIPO_SAIDA_PRODUCAO, 
-                motivo=f"Produção de {qtd_produzida} {receita['unidade']} de {id_produto_final}",
-                usuario=usuario
-            )
-            
-        # 2. Entrada do Produto Final
-        self.realizar_movimentacao(
-            id_produto_final, 
-            qtd_produzida, 
-            TIPO_ENTRADA_PRODUCAO,
-            motivo="Produção Interna Concluída",
-            usuario=usuario
-        )
+            for ing in receita['ingredientes']:
+                qtd_nec = ing['qtd'] * fator
+                self.realizar_movimentacao(ing['id'], qtd_nec, TIPO_SAIDA_PRODUCAO, motivo=f"Prod. {id_produto_final}", usuario=usuario)
+                
+            self.realizar_movimentacao(id_produto_final, qtd_produzida, TIPO_ENTRADA_PRODUCAO, motivo="Produção Concluída", usuario=usuario)
+            return True
+        except Exception as e:
+            print(f"Erro na produção: {e}")
+            return False
