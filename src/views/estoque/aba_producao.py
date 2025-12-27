@@ -3,16 +3,33 @@ import customtkinter as ctk
 from tkinter import ttk, messagebox
 
 class AbaProducao(ctk.CTkFrame):
+    """
+    Classe responsável pela interface de registro de produção diária.
+    Gerencia a seleção de produtos com ficha técnica e envia ordem de produção.
+    """
+
     def __init__(self, master, controller, produtos_ref, callback_atualizar):
+        """
+        Inicializa a aba de produção.
+
+        :param master: Widget pai.
+        :param controller: Instância do EstoqueController.
+        :param produtos_ref: Referência ao dicionário de produtos em memória.
+        :param callback_atualizar: Função para forçar atualização da interface principal.
+        """
         super().__init__(master)
         self.controller = controller
         self.produtos = produtos_ref
         self.callback_atualizar = callback_atualizar
         self.receitas_cache = {}
+        self.id_selecionado = None  # Inicialização segura
         
         self.montar_layout()
 
     def montar_layout(self):
+        """
+        Configura e posiciona os widgets da interface (Grid layout).
+        """
         # Layout de 2 colunas
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
@@ -59,7 +76,9 @@ class AbaProducao(ctk.CTkFrame):
                      text_color="#E74C3C", font=("Arial", 11)).pack(side="bottom", pady=20)
 
     def atualizar(self):
-        # Recarrega receitas disponíveis
+        """
+        Recarrega a lista de produtos que possuem receita cadastrada.
+        """
         self.tree_prod.delete(*self.tree_prod.get_children())
         self.receitas_cache = self.controller.carregar_receitas()
         
@@ -68,6 +87,12 @@ class AbaProducao(ctk.CTkFrame):
             self.tree_prod.insert("", "end", values=(nome,), tags=(id_prod,))
 
     def selecionar_produto(self, event):
+        """
+        Callback acionado ao clicar em um item da lista.
+        Carrega os detalhes do produto selecionado.
+
+        :param event: Evento do Tkinter.
+        """
         sel = self.tree_prod.selection()
         if not sel: return
         
@@ -89,19 +114,24 @@ class AbaProducao(ctk.CTkFrame):
         self.ent_qtd.focus_set()
 
     def confirmar_producao(self):
-        if not hasattr(self, 'id_selecionado'): return
+        """
+        Valida os dados e envia a solicitação de produção para o controller.
+        """
+        if not self.id_selecionado: return
         
         qtd_str = self.ent_qtd.get().replace(",", ".")
         try:
             qtd = float(qtd_str)
             if qtd <= 0: raise ValueError
-        except:
-            messagebox.showerror("Erro", "Digite uma quantidade válida.")
+        except ValueError:
+            messagebox.showerror("Erro", "Digite uma quantidade válida (maior que zero).")
             return
 
         # Confirmação visual
         nome = self.lbl_titulo.cget("text")
-        if not messagebox.askyesno("Confirmar", f"Confirma a produção de {qtd} {nome}?\n\nOs estoques de farinha/insumos serão descontados."):
+        msg_confirm = f"Confirma a produção de {qtd} {nome}?\n\nOs estoques de farinha/insumos serão descontados."
+        
+        if not messagebox.askyesno("Confirmar Produção", msg_confirm):
             return
 
         # Chama o controller
@@ -110,6 +140,9 @@ class AbaProducao(ctk.CTkFrame):
         if ok:
             messagebox.showinfo("Sucesso", msg)
             self.ent_qtd.delete(0, "end")
+            self.lbl_titulo.configure(text="Selecione um produto...") # Reseta visual
+            self.btn_produzir.configure(state="disabled")
+            self.id_selecionado = None
             self.callback_atualizar() # Atualiza estoques na tela
         else:
             messagebox.showerror("Erro", msg)
