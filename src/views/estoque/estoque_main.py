@@ -80,13 +80,27 @@ class EstoqueFrame(ctk.CTkFrame):
         self.aba_historico = AbaHistorico(tab_hist, self.produtos, self.atualizar_tudo)
         self.aba_historico.pack(fill="both", expand=True)
 
+    # src/views/estoque/estoque_main.py
+
     def ao_mudar_aba(self):
-        """Salva a aba atual e fecha qualquer dropdown órfão"""
-        # Fecha popups ativos em todas as abas que usam o componente
-        self.aba_cadastro.dropdown_cat.fechar_lista()
-        self.aba_receitas.dropdown_insumos.fechar_lista()
-        self.aba_movimentacao.dropdown_prod.fechar_lista()
+        """Limpa o foco e fecha dropdowns ao alternar entre abas."""
         aba_atual = self.tabview.get()
+        
+        # 1. Rouba o foco para o Tabview (limpa o cursor de qualquer Entry)
+        self.tabview.focus_set()
+        
+        # 2. Fecha popups de forma preventiva
+        try:
+            if hasattr(self, 'aba_cadastro'):
+                self.aba_cadastro.dropdown_cat.fechar_lista()
+            if hasattr(self, 'aba_receitas'):
+                self.aba_receitas.dropdown_insumos.fechar_lista()
+            if hasattr(self, 'aba_movimentacao'):
+                self.aba_movimentacao.dropdown_prod.fechar_lista()
+        except:
+            pass
+        
+        self.update_idletasks()
         dev_state.salvar_estado({"aba_estoque": aba_atual})
 
     def restaurar_estado_aba(self):

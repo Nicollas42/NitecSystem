@@ -2044,5 +2044,82 @@
         "novo": 131.0,
         "motivo": "Produção Concluída",
         "usuario": "Admin"
+    },
+    {
+        "data": "2025-12-27 13:07:20",
+        "tipo": "ENTRADA_FUNDO",
+        "cod": "2007",
+        "nome": "COCA COLA 2L",
+        "qtd": 1.0,
+        "anterior": 26.0,
+        "novo": 27.0,
+        "motivo": "",
+        "usuario": "Admin"
+    },
+    {
+        "data": "2025-12-27 13:07:22",
+        "tipo": "ENTRADA_FUNDO",
+        "cod": "2007",
+        "nome": "COCA COLA 2L",
+        "qtd": 1.0,
+        "anterior": 27.0,
+        "novo": 28.0,
+        "motivo": "",
+        "usuario": "Admin"
+    },
+    {
+        "data": "2025-12-27 13:07:41",
+        "tipo": "ENTRADA_FUNDO",
+        "cod": "2007",
+        "nome": "COCA COLA 2L",
+        "qtd": 1.0,
+        "anterior": 28.0,
+        "novo": 29.0,
+        "motivo": "aaaaaa",
+        "usuario": "Admin"
+    },
+    {
+        "data": "2025-12-27 13:07:43",
+        "tipo": "PERDA_FUNDO",
+        "cod": "2007",
+        "nome": "COCA COLA 2L",
+        "qtd": 1.0,
+        "anterior": 29.0,
+        "novo": 28.0,
+        "motivo": "aaaaaa",
+        "usuario": "Admin"
+    },
+    {
+        "data": "2025-12-27 13:08:28",
+        "tipo": "PERDA_FUNDO",
+        "cod": "2007",
+        "nome": "COCA COLA 2L",
+        "qtd": 10.0,
+        "anterior": 28.0,
+        "novo": 18.0,
+        "motivo": "aaaaaa",
+        "usuario": "Admin"
+    },
+    {
+        "data": "2025-12-27 15:15:07",
+        "tipo": "TRANSFERENCIA",
+        "cod": "1001",
+        "nome": "FARINHA DE TRIGO ESPECIAL",
+        "qtd": 2.0,
+        "anterior": 0.0,
+        "novo": 2.0,
+        "motivo": "🚨 REPOSIÇÃO DIRETA CAIXA",
+        "usuario": "Admin (Dev)"
+    },
+    {
+        "data": "2025-12-27 15:16:01",
+        "tipo": "SAIDA_VENDA",
+        "cod": "2007",
+        "nome": "COCA COLA 2L",
+        "qtd": -3.0,
+        "anterior": 22.0,
+        "novo": 19.0,
+        "motivo": "Venda PDV",
+        "usuario": "Admin (Dev)"
     }
 ]

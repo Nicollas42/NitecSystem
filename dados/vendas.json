@@ -65,5 +65,19 @@
         ],
         "operador": "Carlos Dono",
         "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1766859361,
+        "data": "27/12/2025 15:16",
+        "total": 42.0,
+        "itens": [
+            {
+                "produto": "COCA COLA 2L",
+                "qtd": 3.0,
+                "total": 42.0
+            }
+        ],
+        "operador": "Admin (Dev)",
+        "pagamento": "Pix"
     }
 ]
