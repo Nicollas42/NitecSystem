@@ -1,1 +1,24 @@
-{}
+{
+    "2001": {
+        "id_produto": "2001",
+        "nome": "PÃO FRANCÊS",
+        "rendimento": 100.0,
+        "ingredientes": [
+            {
+                "id": "1003",
+                "nome": "SAL REFINADO",
+                "qtd": 100.0
+            },
+            {
+                "id": "1001",
+                "nome": "FARINHA DE TRIGO ESPECIAL",
+                "qtd": 5.0
+            },
+            {
+                "id": "1002",
+                "nome": "FERMENTO BIOLÓGICO SECO",
+                "qtd": 100.0
+            }
+        ]
+    }
+}

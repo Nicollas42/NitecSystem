@@ -1,1 +1,46 @@
-[]
+[
+    {
+        "data": "2025-12-27 01:53:59",
+        "tipo": "SAIDA_PRODUCAO_FUNDO",
+        "cod": "1003",
+        "nome": "SAL REFINADO",
+        "qtd": 100.0,
+        "anterior": 5000.0,
+        "novo": 4900.0,
+        "motivo": "Prod. 100.0 PÃO FRANCÊS",
+        "usuario": "Admin"
+    },
+    {
+        "data": "2025-12-27 01:53:59",
+        "tipo": "SAIDA_PRODUCAO_FUNDO",
+        "cod": "1001",
+        "nome": "FARINHA DE TRIGO ESPECIAL",
+        "qtd": 5.0,
+        "anterior": 100.0,
+        "novo": 95.0,
+        "motivo": "Prod. 100.0 PÃO FRANCÊS",
+        "usuario": "Admin"
+    },
+    {
+        "data": "2025-12-27 01:53:59",
+        "tipo": "SAIDA_PRODUCAO_FUNDO",
+        "cod": "1002",
+        "nome": "FERMENTO BIOLÓGICO SECO",
+        "qtd": 100.0,
+        "anterior": 2000.0,
+        "novo": 1900.0,
+        "motivo": "Prod. 100.0 PÃO FRANCÊS",
+        "usuario": "Admin"
+    },
+    {
+        "data": "2025-12-27 01:53:59",
+        "tipo": "ENTRADA_PRODUCAO_FUNDO",
+        "cod": "2001",
+        "nome": "PÃO FRANCÊS",
+        "qtd": 100.0,
+        "anterior": 0.0,
+        "novo": 100.0,
+        "motivo": "Produção Concluída",
+        "usuario": "Admin"
+    }
+]
