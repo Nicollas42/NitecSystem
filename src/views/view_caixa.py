@@ -6,7 +6,7 @@ from datetime import datetime
 import time
 from src.controllers.estoque_controller import EstoqueController
 
-# --- CORREÇÃO DOS IMPORTS ---
+# --- IMPORTS ---
 from src.controllers import config_manager
 from src.models import database
 
@@ -16,7 +16,10 @@ class CaixaFrame(ctk.CTkFrame):
         super().__init__(master)
         self.usuario = usuario_dados
         self.voltar_menu = callback_voltar
-        self.estoque_ctrl = EstoqueController() 
+        self.estoque_ctrl = EstoqueController()
+        
+        # Controle da janela de ajuda
+        self.janela_ajuda = None
         
         self.config = config_manager.carregar_config()
         self.cor_destaque = self.config["cor_destaque"]
@@ -34,6 +37,14 @@ class CaixaFrame(ctk.CTkFrame):
 
         self.montar_interface()
 
+    def validar_entrada(self, texto_novo):
+        """
+        Retorna True se o texto for numérico ou vazio.
+        Retorna False se tiver letras ou símbolos (bloqueia a digitação).
+        """
+        if texto_novo == "": return True
+        return texto_novo.isdigit()
+
     def montar_interface(self):
         # CABEÇALHO
         top = ctk.CTkFrame(self, height=50, corner_radius=0)
@@ -42,7 +53,8 @@ class CaixaFrame(ctk.CTkFrame):
         ctk.CTkButton(top, text="🔙 Voltar ao Menu", width=100, fg_color="#555", 
                       command=self.tentar_sair).pack(side="left", padx=(10, 5), pady=10)
         
-        ctk.CTkButton(top, text="?", width=30, fg_color="#333", hover_color="#444", 
+        # BOTÃO DE AJUDA AZUL
+        ctk.CTkButton(top, text="?", width=30, fg_color="#2980B9", hover_color="#1F618D", 
                       command=self.mostrar_ajuda).pack(side="left", padx=5)
 
         ctk.CTkLabel(top, text="PDV ABERTO", font=("Arial", 16, "bold")).pack(side="left", padx=20)
@@ -65,12 +77,20 @@ class CaixaFrame(ctk.CTkFrame):
 
         ctk.CTkLabel(f_input, text="CÓDIGO (F1)", font=("Arial", 12)).pack(anchor="w", padx=10)
         
+        # --- CAMPO DE CÓDIGO COM VALIDAÇÃO (SOMENTE NÚMEROS) ---
+        # Registra a função de validação no sistema do Tkinter
+        vcmd = (self.register(self.validar_entrada), "%P")
+        
         self.entry_cod = ctk.CTkEntry(f_input, height=45, font=("Arial", 18), border_width=2)
+        # Aplica a validação
+        self.entry_cod.configure(validate="key", validatecommand=vcmd)
+        
         self.entry_cod.pack(fill="x", padx=10, pady=5)
         self.entry_cod.bind('<Return>', self.adicionar_item)
         self.entry_cod.bind('<FocusIn>', self.ao_focar_input)
         self.entry_cod.bind('<FocusOut>', self.ao_desfocar_input)
         self.entry_cod.focus()
+        # --------------------------------------------------------
 
         self.style = ttk.Style()
         self.style.theme_use("clam")
@@ -145,7 +165,6 @@ class CaixaFrame(ctk.CTkFrame):
 
         if cod in self.produtos_db:
             prod = self.produtos_db[cod]
-            # CORREÇÃO: Alterado de 'un' para 'unidade'
             unidade = prod.get('unidade', 'UN') 
             if unidade in ['KG', 'G']: 
                 self.popup_peso(prod, cod)
@@ -155,11 +174,9 @@ class CaixaFrame(ctk.CTkFrame):
             self.master.bell()
     
     def popup_peso(self, prod, cod):
-        # CORREÇÃO: Alterado de 'un' para 'unidade'
         unidade = prod.get('unidade', 'UN')
         titulo = f"Peso para {prod['nome']} ({unidade}):"
         d = ctk.CTkInputDialog(text=titulo, title="Pesagem")
-        # Centraliza o popup
         try:
             d.geometry(f"+{self.winfo_rootx() + 300}+{self.winfo_rooty() + 200}")
         except: pass
@@ -174,43 +191,36 @@ class CaixaFrame(ctk.CTkFrame):
 
 
     def lancar(self, prod, cod, qtd):
-        # 1. Verifica itens no carrinho
         item_existente = None
         for item in self.carrinho:
             if item['codigo'] == cod:
                 item_existente = item
                 break
         
-        # 2. Dados de Estoque
         est_frente = prod.get("estoque_atual", 0.0)
         unidade = prod.get('unidade', 'UN')
         controla = prod.get('controla_estoque', True)
         
-        # 3. Calcula total desejado
         qtd_total_tentativa = qtd
         if item_existente: 
             qtd_total_tentativa += item_existente['qtd']
 
-        # --- LÓGICA DE REPOSIÇÃO AUTOMÁTICA NO CAIXA ---
+        # --- REPOSIÇÃO AUTOMÁTICA ---
         if controla and est_frente < qtd_total_tentativa:
             qtd_faltante = qtd_total_tentativa - est_frente
             est_fundo = prod.get("estoque_fundo", 0.0)
             
-            # Se tem saldo no fundo para cobrir o buraco
             if est_fundo >= qtd_faltante:
                 msg = (f"Estoque da FRENTE insuficiente (Faltam {qtd_faltante} {unidade}).\n\n"
                        f"Há {est_fundo} {unidade} no FUNDO.\n"
                        f"Deseja transferir {qtd_faltante} {unidade} agora e continuar a venda?")
                 
-                # Pergunta ao operador
                 if messagebox.askyesno("Reposição Rápida", msg):
-                    # Realiza a transferência automática
                     ok, resp = self.estoque_ctrl.transferir_fundo_para_frente(
                         cod, qtd_faltante, self.usuario['nome'], motivo="🚨 REPOSIÇÃO DIRETA CAIXA"
                     )
                     
                     if ok:
-                        # Atualiza a memória do caixa com os novos saldos para permitir a venda
                         prod['estoque_atual'] += qtd_faltante
                         prod['estoque_fundo'] -= qtd_faltante
                         messagebox.showinfo("Resolvido", "Produto transferido! Prosseguindo com a venda...")
@@ -219,9 +229,8 @@ class CaixaFrame(ctk.CTkFrame):
                         return
                 else:
                     self.entry_cod.focus_set()
-                    return # Operador negou a transferência
+                    return 
             else:
-                # Não tem nem no fundo
                 messagebox.showwarning(
                     "Estoque Crítico", 
                     f"Produto em falta na Loja e no Depósito!\n"
@@ -229,7 +238,7 @@ class CaixaFrame(ctk.CTkFrame):
                 )
                 self.entry_cod.focus_set()
                 return
-        # ------------------------------------------------
+        # -----------------------------
 
         nome_exibicao = prod['nome']
         iid_linha = None 
@@ -500,21 +509,55 @@ class CaixaFrame(ctk.CTkFrame):
             return
         self.voltar_menu()
 
+    # --- NOVA FUNÇÃO DE AJUDA COM JANELA NÃO-BLOQUEANTE ---
     def mostrar_ajuda(self):
-        msg = """
-        🛒 CAIXA
+        """Janela flutuante não-bloqueante com guia do caixa"""
+        
+        # Evita abrir múltiplas janelas iguais
+        if self.janela_ajuda is not None and self.janela_ajuda.winfo_exists():
+            self.janela_ajuda.lift() # Traz para frente
+            self.janela_ajuda.focus_force() # Dá o foco
+            return
 
-        1. Leitor / Celular:
-           - A borda VERDE indica pronto para ler.
+        self.janela_ajuda = ctk.CTkToplevel(self)
+        self.janela_ajuda.title("Ajuda PDV")
+        self.janela_ajuda.geometry("500x600")
+        
+        # Lógica para ficar no topo sem bloquear o uso
+        self.janela_ajuda.transient(self) 
+        self.janela_ajuda.lift()          
+        self.janela_ajuda.focus_force()   
+        
+        ctk.CTkLabel(self.janela_ajuda, text="📖 GUIA DO CAIXA", font=("Arial", 20, "bold"), text_color="#2CC985").pack(pady=20)
+        
+        # Seção Leitor
+        frame_leitor = ctk.CTkFrame(self.janela_ajuda)
+        frame_leitor.pack(fill="x", padx=20, pady=10)
+        
+        ctk.CTkLabel(frame_leitor, text="🔫 LEITOR DE CÓDIGOS", font=("Arial", 14, "bold")).pack(pady=10)
+        
+        def linha_legenda(titulo, desc):
+            row = ctk.CTkFrame(frame_leitor, fg_color="transparent")
+            row.pack(fill="x", pady=5, padx=10)
+            ctk.CTkLabel(row, text=titulo, font=("Arial", 12, "bold"), width=100, anchor="w").pack(side="left", padx=5)
+            ctk.CTkLabel(row, text=desc, text_color="#ccc", anchor="w").pack(side="left", fill="x", expand=True)
 
-        2. Pagamento (F5):
-           - Pix: Gera QR Code simulado e aguarda aprovação.
-           - Dinheiro: Calcula troco e valida valor.
+        linha_legenda("🟢 Verde", "Campo focado. Pode bipar o produto.")
+        linha_legenda("🔴 Vermelho", "Campo sem foco. Clique na caixa para ativar.")
+        linha_legenda("Balança", "Códigos iniciados com '2' são lidos como peso.")
 
-        3. Atalhos:
-           - F1: Ativar Leitor
-           - F5: Pagamento
-           - Esc: Cancelar Tudo
-           - Del: Cancelar Item
-        """
-        messagebox.showinfo("Ajuda", msg)
+        # Seção Atalhos
+        frame_keys = ctk.CTkFrame(self.janela_ajuda)
+        frame_keys.pack(fill="both", expand=True, padx=20, pady=20)
+        
+        ctk.CTkLabel(frame_keys, text="⌨️ ATALHOS RÁPIDOS", font=("Arial", 14, "bold")).pack(pady=10)
+        
+        texto_keys = """
+• F1: Focar no campo de código (Ativa Leitor)
+• F5: Finalizar Venda (Pagamento)
+• Esc: Cancelar Venda Completa
+• Del: Cancelar Item Selecionado
+• Enter: Adicionar Produto (se digitar manual)
+"""
+        lbl_keys = ctk.CTkLabel(frame_keys, text=texto_keys, justify="left", anchor="nw", padx=10, font=("Consolas", 14))
+        lbl_keys.pack(fill="both", expand=True)

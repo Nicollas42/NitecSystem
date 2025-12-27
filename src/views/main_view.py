@@ -5,7 +5,7 @@ from src.models import database
 from src.views.view_login import LoginFrame
 from src.views.view_dashboard import DashboardFrame
 from src.views.view_caixa import CaixaFrame
-from src.views.view_estoque import EstoqueFrame
+from src.views.estoque.estoque_main import EstoqueFrame
 from src.views.view_sobras import SobrasFrame
 from src.views.view_financeiro import FinanceiroFrame
 
