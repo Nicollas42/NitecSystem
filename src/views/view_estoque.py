@@ -9,12 +9,12 @@ class EstoqueFrame(ctk.CTkFrame):
         super().__init__(master)
         self.voltar_menu = callback_voltar
         self.controller = EstoqueController()
-        self.janela_ajuda = None # Controle para não abrir várias janelas de ajuda
+        self.janela_ajuda = None
         
         # Dados em Memória
         self.produtos = database.carregar_produtos()
         
-        # Configura estilo visual das tabelas
+        # Configura estilo visual
         self.estilizar_tabelas()
         
         self.montar_layout()
@@ -144,13 +144,14 @@ class EstoqueFrame(ctk.CTkFrame):
         self.combo_local = ctk.CTkOptionMenu(center, values=["Fundo (Depósito)", "Frente (Loja)"], fg_color="#333")
         self.combo_local.pack(fill="x", pady=5)
 
+        # --- AQUI ESTAVA A MUDANÇA: REMOVI A OPÇÃO "SAÍDA" ---
         self.tipo_mov_var = ctk.StringVar(value="ENTRADA")
         radio_frame = ctk.CTkFrame(center)
         radio_frame.pack(fill="x", pady=15)
         
-        ctk.CTkRadioButton(radio_frame, text="🔼 ENTRADA", variable=self.tipo_mov_var, value="ENTRADA", fg_color="#27AE60").pack(side="left", padx=20, pady=10)
-        ctk.CTkRadioButton(radio_frame, text="🔽 SAÍDA", variable=self.tipo_mov_var, value="SAIDA", fg_color="#E67E22").pack(side="left", padx=20, pady=10)
-        ctk.CTkRadioButton(radio_frame, text="🗑️ PERDA", variable=self.tipo_mov_var, value="PERDA", fg_color="#C0392B").pack(side="left", padx=20, pady=10)
+        # Apenas Entrada e Perda. Saída manual é proibida.
+        ctk.CTkRadioButton(radio_frame, text="🔼 ENTRADA (Compra/Produção)", variable=self.tipo_mov_var, value="ENTRADA", fg_color="#27AE60").pack(side="left", padx=40, pady=10)
+        ctk.CTkRadioButton(radio_frame, text="🗑️ PERDA (Quebra/Vencimento)", variable=self.tipo_mov_var, value="PERDA", fg_color="#C0392B").pack(side="right", padx=40, pady=10)
 
         detalhes_frame = ctk.CTkFrame(center, fg_color="transparent")
         detalhes_frame.pack(fill="x", pady=10)
@@ -160,10 +161,10 @@ class EstoqueFrame(ctk.CTkFrame):
         self.ent_mov_qtd.pack(side="left")
 
         ctk.CTkLabel(detalhes_frame, text="Motivo:").pack(side="left", padx=(20,10))
-        self.ent_mov_motivo = ctk.CTkEntry(detalhes_frame, placeholder_text="Ex: Compra fornecedor")
+        self.ent_mov_motivo = ctk.CTkEntry(detalhes_frame, placeholder_text="Ex: Compra NF 123 ou Validade")
         self.ent_mov_motivo.pack(side="left", fill="x", expand=True)
 
-        ctk.CTkButton(center, text="✅ CONFIRMAR MOVIMENTAÇÃO", height=50, fg_color="#2980B9", 
+        ctk.CTkButton(center, text="✅ CONFIRMAR", height=50, fg_color="#2980B9", 
                       command=self.realizar_movimento).pack(pady=20, fill="x")
         
         ctk.CTkLabel(center, text="--- OU ---", text_color="#666").pack(pady=10)
@@ -196,10 +197,9 @@ class EstoqueFrame(ctk.CTkFrame):
         
         ctk.CTkLabel(filter_frame, text="Extrato Completo de Movimentações", font=("Arial", 14, "bold")).pack(side="left", padx=10)
         
-        # --- BOTÃO DE AJUDA AGORA AZUL ---
+        # Botão de Ajuda
         ctk.CTkButton(filter_frame, text="?", width=30, fg_color="#2980B9", hover_color="#1F618D", 
                       command=self.mostrar_ajuda_historico).pack(side="left", padx=5)
-        # ---------------------------------
 
         ctk.CTkButton(filter_frame, text="🔄 Atualizar Histórico", width=150, 
                       command=self.atualizar_historico).pack(side="right", padx=10)
@@ -231,7 +231,6 @@ class EstoqueFrame(ctk.CTkFrame):
 
     def mostrar_ajuda_historico(self):
         """Abre uma janela modal não-bloqueante com explicações"""
-        
         if self.janela_ajuda is not None and self.janela_ajuda.winfo_exists():
             self.janela_ajuda.lift()
             self.janela_ajuda.focus_force()
@@ -241,16 +240,12 @@ class EstoqueFrame(ctk.CTkFrame):
         self.janela_ajuda.title("Legenda e Regras do Estoque")
         self.janela_ajuda.geometry("500x600")
         
-        # --- CORREÇÃO DO FOCO (Mantém janela na frente sem bloquear) ---
-        self.janela_ajuda.transient(self) # Faz ser filha da janela principal
-        self.janela_ajuda.lift()          # Traz para cima
-        self.janela_ajuda.focus_force()   # Dá o foco
-        # -------------------------------------------------------------
+        self.janela_ajuda.transient(self)
+        self.janela_ajuda.lift()
+        self.janela_ajuda.focus_force()
         
-        # Título
         ctk.CTkLabel(self.janela_ajuda, text="📖 GUIA RÁPIDO", font=("Arial", 20, "bold"), text_color="#2CC985").pack(pady=20)
         
-        # Seção de Cores
         frame_cores = ctk.CTkFrame(self.janela_ajuda)
         frame_cores.pack(fill="x", padx=20, pady=10)
         
@@ -268,7 +263,6 @@ class EstoqueFrame(ctk.CTkFrame):
         linha_legenda("#d7bde2", "TRANSFERÊNCIA", "Movimento Fundo -> Frente.")
         linha_legenda("#fad7a0", "PERDA", "Quebra, Vencimento ou Uso.")
 
-        # Seção de Regras
         frame_regras = ctk.CTkFrame(self.janela_ajuda)
         frame_regras.pack(fill="both", expand=True, padx=20, pady=20)
         
@@ -276,16 +270,17 @@ class EstoqueFrame(ctk.CTkFrame):
         
         texto_regras = """
 1. ESTOQUE DUPLO (FRENTE vs FUNDO):
-• FRENTE (Loja): É o estoque que o cliente vê. O Caixa só consegue vender o que está aqui.
-• FUNDO (Depósito): É o estoque fechado. Deve ser transferido para a frente antes de vender.
+• FRENTE (Loja): Estoque visível ao cliente. O Caixa vende daqui.
+• FUNDO (Depósito): Estoque fechado. Transfira para Frente antes de vender.
 
-2. FLUXO IDEAL:
-• Chegou Mercadoria: Lance ENTRADA no FUNDO.
-• Prateleira Vazia: Faça TRANSFERÊNCIA (Fundo -> Frente).
-• Venda: O sistema baixa automaticamente da FRENTE.
+2. FLUXO OBRIGATÓRIO:
+• Chegou Mercadoria? Lance ENTRADA no FUNDO.
+• Prateleira Vazia? Faça TRANSFERÊNCIA (Fundo -> Frente).
+• Venda? Baixa automática da FRENTE no caixa.
 
-3. REPOSIÇÃO DE EMERGÊNCIA:
-• Se tentar vender algo que acabou na Frente mas tem no Fundo, o sistema sugere uma transferência automática (aparece Roxo no histórico).
+3. POR QUE NÃO TEM "SAÍDA MANUAL"?
+• Se saiu, ou foi VENDA (dinheiro no caixa) ou foi PERDA (prejuízo).
+• "Saída" genérica cria furos no caixa e no estoque.
 """
         lbl_regras = ctk.CTkLabel(frame_regras, text=texto_regras, justify="left", anchor="nw", padx=10, font=("Consolas", 12))
         lbl_regras.pack(fill="both", expand=True)
@@ -428,7 +423,7 @@ class EstoqueFrame(ctk.CTkFrame):
             self.tree_hist.tag_configure(tipo, background=cor, foreground="black")
 
         for mov in movimentos:
-            # 1. Formata Quantidade
+            # Formata Quantidade
             cod_prod = mov.get('cod')
             prod_dados = self.produtos.get(cod_prod, {})
             unidade = prod_dados.get('unidade', 'UN')
@@ -442,11 +437,9 @@ class EstoqueFrame(ctk.CTkFrame):
                 else:
                     qtd_fmt = f"{qtd_raw:.2f}"
 
-            # 2. Calcula Valor Total (Qtd * Preço Atual)
+            # Calcula Valor
             preco_atual = prod_dados.get('preco', 0.0)
             valor_total = qtd_raw * preco_atual
-            
-            # Formata Valor (Se negativo, mantém sinal)
             valor_fmt = f"R$ {valor_total:.2f}"
 
             tipo_mov = mov.get('tipo', '')
