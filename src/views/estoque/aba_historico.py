@@ -7,9 +7,7 @@ from src.utils.componentes_estilizados import CTkFloatingDropdown, CTkCalendar
 
 class AbaHistorico(ctk.CTkFrame):
     def __init__(self, master, produtos_ref, callback_atualizar):
-        """
-        Inicializa a aba de histórico com referências de produtos e filtros.
-        """
+        print("DEBUG [Historico]: Inicializando aba...")
         super().__init__(master)
         self.produtos = produtos_ref 
         self.callback_atualizar = callback_atualizar
@@ -20,25 +18,20 @@ class AbaHistorico(ctk.CTkFrame):
         self.dropdown_user = None
         self.dropdown_tipo = None
         
-        # Variáveis de ordenação
         self.sort_col = None
         self.sort_dir = "original"
         
-        # Dados Iniciais
         self.lista_produtos_full = sorted([p['nome'] for p in self.produtos.values()])
         self.lista_usuarios_full = self.carregar_lista_usuarios()
         self.lista_tipos = ["TODOS", "VENDA", "ENTRADA", "PRODUCAO", "TRANSFERENCIA", "PERDA"]
 
         self.montar_layout()
         self.configurar_cores_tags()
-        self.monitorar_janela_principal()
         self.resetar_datas_hoje()
         self.filtrar_dados() 
+        print("DEBUG [Historico]: Inicialização concluída.")
 
     def montar_layout(self):
-        """
-        Monta a estrutura visual da aba de histórico.
-        """
         header_frame = ctk.CTkFrame(self, fg_color="transparent")
         header_frame.pack(fill="x", padx=10, pady=(10, 5))
         ctk.CTkLabel(header_frame, text="Extrato Completo", font=("Arial", 16, "bold"), text_color="#2CC985").pack(side="left", padx=10)
@@ -53,7 +46,7 @@ class AbaHistorico(ctk.CTkFrame):
         self.criar_campo_data(row, "De:", "ent_data_ini")
         self.criar_campo_data(row, "Até:", "ent_data_fim")
 
-        # FILTROS COM ENTER
+        # FILTROS
         ctk.CTkLabel(row, text="Tipo:", text_color="#ccc", font=("Arial", 11)).pack(side="left", padx=(10, 2))
         self.ent_tipo = ctk.CTkEntry(row, width=120, placeholder_text="Selecione...")
         self.ent_tipo.pack(side="left", padx=2)
@@ -88,31 +81,57 @@ class AbaHistorico(ctk.CTkFrame):
         scroll.pack(side="right", fill="y")
         self.tree.pack(side="left", fill="both", expand=True)
 
+    def criar_campo_data(self, parent, label, attr_name):
+        ctk.CTkLabel(parent, text=label, text_color="#ccc", font=("Arial", 11)).pack(side="left", padx=(5, 2))
+        entry = ctk.CTkEntry(parent, width=90)
+        entry.pack(side="left", padx=2)
+        
+        # Ao clicar, chama a função de abrir o calendário
+        entry.bind("<Button-1>", lambda e: self.abrir_calendario(e, entry))
+        
+        setattr(self, attr_name, entry)
+
+    def abrir_calendario(self, event, entry_widget):
+        print(f"DEBUG [Historico]: Clique detectado no campo data: {entry_widget}")
+        
+        # --- SEGURANÇA: Fecha qualquer Dropdown que esteja aberto para evitar conflito visual ---
+        if self.dropdown_prod: self.dropdown_prod.fechar_lista()
+        if self.dropdown_user: self.dropdown_user.fechar_lista()
+        if self.dropdown_tipo: self.dropdown_tipo.fechar_lista()
+        # ---------------------------------------------------------------------------------------
+
+        if self.popup_calendario and self.popup_calendario.winfo_exists():
+            print("DEBUG [Historico]: Calendário já existe. Fechando anterior...")
+            try:
+                self.popup_calendario.fechar()
+            except:
+                self.popup_calendario.destroy()
+        
+        def ao_escolher(data_str):
+            print(f"DEBUG [Historico]: Data escolhida: {data_str}")
+            entry_widget.delete(0, 'end')
+            entry_widget.insert(0, data_str)
+            self.aplicar_filtro() 
+        
+        print("DEBUG [Historico]: Abrindo novo calendário...")
+        self.popup_calendario = CTkCalendar(self, entry_widget=entry_widget, on_select=ao_escolher)
+
     def restaurar_layout_colunas(self):
-        """
-        Restaura a ordem e a largura original das colunas da Treeview.
-        """
         larguras = {
             "data": 140, "tipo": 100, "produto": 220, "qtd": 100, 
             "valor": 100, "usuario": 100, "motivo": 250
         }
-        # Restaura ordem visual
         self.tree.configure(displaycolumns=self.cols)
-        # Restaura larguras
         for col, width in larguras.items():
             self.tree.column(col, width=width)
 
     def aplicar_filtro(self):
-        """
-        Executa a busca e reseta o layout das colunas.
-        """
+        # print("DEBUG [Historico]: Aplicando filtros...") # Descomente se quiser muito spam
         self.restaurar_layout_colunas()
         self.filtrar_dados()
 
     def limpar_filtros(self):
-        """
-        Limpa campos e restaura layout original.
-        """
+        print("DEBUG [Historico]: Limpando filtros...")
         self.resetar_datas_hoje()
         for e in [self.ent_prod, self.ent_user, self.ent_tipo]: e.delete(0, 'end')
         self.sort_col = None; self.sort_dir = "original"
@@ -120,41 +139,14 @@ class AbaHistorico(ctk.CTkFrame):
         self.restaurar_layout_colunas()
         self.filtrar_dados()
 
-    def criar_campo_data(self, parent, label, attr_name):
-        ctk.CTkLabel(parent, text=label, text_color="#ccc", font=("Arial", 11)).pack(side="left", padx=(5, 2))
-        entry = ctk.CTkEntry(parent, width=90)
-        entry.pack(side="left", padx=2)
-        entry.bind("<Button-1>", lambda e: self.abrir_calendario(e, entry))
-        setattr(self, attr_name, entry)
-
-    def abrir_calendario(self, event, entry_widget):
-        if self.popup_calendario and self.popup_calendario.winfo_exists():
-            self.popup_calendario.destroy()
-        
-        self.popup_calendario = ctk.CTkToplevel(self)
-        self.popup_calendario.overrideredirect(True)
-        self.popup_calendario.attributes("-topmost", True)
-        
-        x = entry_widget.winfo_rootx()
-        y = entry_widget.winfo_rooty() + entry_widget.winfo_height() + 2
-        self.popup_calendario.geometry(f"250x230+{x}+{y}")
-        
-        def ao_escolher(data_str):
-            entry_widget.delete(0, 'end')
-            entry_widget.insert(0, data_str)
-            self.popup_calendario.destroy()
-            self.aplicar_filtro()  # atualiza a tabela automaticamente
-        
-        # Aqui criamos o calendário CORRETAMENTE, sem tentar dar pack depois
-        CTkCalendar(self.popup_calendario, entry_widget=entry_widget, on_select=ao_escolher)
-        
-        # Fecha ao perder foco
-        self.popup_calendario.bind("<FocusOut>", lambda e: self.popup_calendario.destroy())
-
     def filtrar_dados(self):
         for i in self.tree.get_children(): self.tree.delete(i)
         try: todos_movs = database.carregar_json(database.ARQ_MOVIMENTOS)[::-1]
         except: todos_movs = []
+        
+        if not hasattr(self, 'ent_data_ini') or not hasattr(self, 'ent_data_fim'):
+            return
+
         f_ini, f_fim = self.get_data_filtro(self.ent_data_ini), self.get_data_filtro(self.ent_data_fim)
         f_tipo, f_prod, f_user = self.ent_tipo.get().strip().upper() or "TODOS", self.ent_prod.get().strip().lower(), self.ent_user.get().strip().lower()
         linhas = []
@@ -207,6 +199,7 @@ class AbaHistorico(ctk.CTkFrame):
         except: return ["Admin"]
 
     def atualizar(self):
+        print("DEBUG [Historico]: Atualizando dados da aba...")
         self.lista_produtos_full = sorted([p['nome'] for p in self.produtos.values()])
         self.dropdown_prod.atualizar_dados(self.lista_produtos_full)
         self.lista_usuarios_full = self.carregar_lista_usuarios()
@@ -214,6 +207,7 @@ class AbaHistorico(ctk.CTkFrame):
         self.filtrar_dados()
 
     def resetar_datas_hoje(self):
+        if not hasattr(self, 'ent_data_ini') or not hasattr(self, 'ent_data_fim'): return
         hoje = date.today().strftime("%d/%m/%Y")
         for e in [self.ent_data_ini, self.ent_data_fim]: e.delete(0, 'end'); e.insert(0, hoje)
 
@@ -222,19 +216,15 @@ class AbaHistorico(ctk.CTkFrame):
         for k, v in colors.items(): self.tree.tag_configure(k, background=v, foreground="black")
 
     def formatar_numero_inteligente(self, v): return f"{int(v)}" if float(v).is_integer() else f"{v:.3f}".rstrip('0').rstrip('.')
+    
     def formatar_data_br(self, s):
         try: return datetime.strptime(str(s).split('.')[0], "%Y-%m-%d %H:%M:%S").strftime("%d/%m/%Y %H:%M:%S")
         except: return s
+    
     def get_data_filtro(self, w):
         try: return datetime.strptime(w.get().strip(), "%d/%m/%Y").date()
         except: return None
-    def monitorar_janela_principal(self): self.winfo_toplevel().bind("<Button-1>", self.ao_clicar_janela, add="+")
-    def ao_clicar_janela(self, e):
-        for d in [self.dropdown_prod, self.dropdown_user, self.dropdown_tipo]:
-            if d: d.fechar_lista()
 
     def mostrar_ajuda(self):
-        from src.utils.textos_ajuda import abrir_ajuda  # Importação local para evitar circular import
-        
-        # Usa a função centralizada de ajuda que já existe no projeto
+        from src.utils.textos_ajuda import abrir_ajuda
         abrir_ajuda(self, "historico")

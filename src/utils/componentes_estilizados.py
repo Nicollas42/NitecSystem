@@ -22,8 +22,11 @@ class CTkFloatingDropdown:
         self.last_x = None
         self.last_y = None
 
+        # --- CORREÇÃO AQUI ---
+        # Removido self.entry.bind("<FocusIn>") para evitar que a lista abra sozinha
+        # ao voltar de um modal ou Alt+Tab.
+        
         self.entry.bind("<KeyRelease>", self.ao_digitar)
-        self.entry.bind("<FocusIn>", self.ao_focar)
         self.entry.bind("<Button-1>", self.ao_clicar)
         self.entry.bind("<Down>", self.mover_selecao_baixo)
         self.entry.bind("<Up>", self.mover_selecao_cima)
@@ -31,10 +34,11 @@ class CTkFloatingDropdown:
         self.entry.bind("<Escape>", lambda e: self.fechar_e_limpar_foco())
 
         self.toplevel.bind_all("<Button-1>", self.monitor_clique_global, add="+")
+        
+        # Garante fechamento em eventos de janela
         self.entry.bind("<Unmap>", lambda e: self.fechar_lista(), add="+")
         self.toplevel.bind("<Unmap>", lambda e: self.fechar_lista(), add="+")
         self.toplevel.bind("<Deactivate>", lambda e: self.fechar_lista())
-        self.toplevel.bind("<FocusOut>", lambda e: self.fechar_lista())
         self.toplevel.bind("<Configure>", self._reposicionar_popup)
 
     def _reposicionar_popup(self, event=None):
@@ -55,7 +59,6 @@ class CTkFloatingDropdown:
             if self.popup and self.popup.winfo_exists():
                 if str(widget_clicado).find(str(self.popup)) != -1: return
             if self.popup: self.fechar_lista()
-            if self.toplevel.focus_get() == self.entry_widget: self.toplevel.focus_set()
         except: pass
 
     def fechar_e_limpar_foco(self):
@@ -69,16 +72,16 @@ class CTkFloatingDropdown:
             self.popup, self.botoes_itens, self.indice_selecionado = None, [], -1
             self.last_x, self.last_y = None, None
 
-    def ao_focar(self, event):
-        if not self.entry.winfo_viewable(): return
-        self.ao_digitar(); self.entry.focus_set(); self.entry.icursor("end")
-
     def ao_clicar(self, event):
         self.fechar_lista()
+        # Delay pequeno para garantir que o clique foi processado
         self.entry.after(50, self._forcar_abertura)
 
     def _forcar_abertura(self):
-        self.ao_digitar(); self.entry.focus_set(); self.entry_widget.focus_set(); self.entry.icursor("end")
+        self.ao_digitar()
+        self.entry.focus_set()
+        self.entry_widget.focus_set()
+        self.entry.icursor("end")
 
     def mostrar_lista(self, items_filtrados):
         if self.bloquear_filtro or not items_filtrados or not self.entry.winfo_viewable():
@@ -147,30 +150,53 @@ class CTkFloatingDropdown:
     def atualizar_dados(self, nova_lista): self.data_list = sorted(nova_lista)
 
 
-
 class CTkCalendar(ctk.CTkToplevel):
     """
-    Calendário flutuante customizado para seleção de datas.
+    Calendário flutuante que permite digitação manual no campo (Two-Way Binding).
     """
     def __init__(self, master, entry_widget=None, on_select=None):
         super().__init__(master)
         self.entry = entry_widget
         self.on_select = on_select
+        self.toplevel_pai = self.entry.winfo_toplevel() if self.entry else master.winfo_toplevel()
+        
+        # Dados iniciais
         self.selected_date = date.today()
+        self.validar_data_do_entry()
+            
         self.current_month = self.selected_date.month
         self.current_year = self.selected_date.year
         
-        # Configuração da janela popup
+        # Configuração Visual
         self.wm_overrideredirect(True)
-        self.attributes("-topmost", True)
+        self.transient(self.toplevel_pai)
         self.configure(fg_color="#2b2b2b")
-
+        
         self.montar_estrutura()
         self.atualizar_calendario()
         self._posicionar()
 
-        # Fecha ao perder foco
-        self.bind("<FocusOut>", lambda e: self.destroy() if e.widget != self else None)
+        # --- CORREÇÃO DE FOCO AQUI ---
+        # 1. Ativa monitoramento com delay
+        self.after(200, self.ativar_monitoramento)
+        
+        if self.entry:
+            # 2. Garante que o Entry tenha o foco para permitir digitação imediata
+            self.after(100, lambda: self.entry.focus_set())
+            
+            # 3. Bindings de sincronia
+            self.entry.bind("<KeyRelease>", self.ao_digitar_data, add="+")
+            self.entry.bind("<Return>", self.ao_dar_enter, add="+")
+
+    def validar_data_do_entry(self):
+        try:
+            val = self.entry.get()
+            self.selected_date = datetime.strptime(val, "%d/%m/%Y").date()
+        except: pass
+
+    def ativar_monitoramento(self):
+        self.toplevel_pai.bind("<Button-1>", self.monitor_clique_global, add="+")
+        self.bind("<Escape>", lambda e: self.fechar())
 
     def _posicionar(self):
         if self.entry:
@@ -179,96 +205,97 @@ class CTkCalendar(ctk.CTkToplevel):
             y = self.entry.winfo_rooty() + self.entry.winfo_height() + 2
             self.geometry(f"+{x}+{y}")
 
+    def monitor_clique_global(self, event):
+        try:
+            widget_clicado = event.widget
+            # Permite clicar e digitar no Entry
+            if str(self.entry) in str(widget_clicado): return
+            # Permite clicar no Calendário
+            if str(self) in str(widget_clicado): return
+            self.fechar()
+        except: pass
+
+    def ao_digitar_data(self, event):
+        texto = self.entry.get()
+        if len(texto) == 10:
+            try:
+                nova_data = datetime.strptime(texto, "%d/%m/%Y").date()
+                self.selected_date = nova_data
+                self.current_month = nova_data.month
+                self.current_year = nova_data.year
+                self.atualizar_calendario()
+            except: pass
+
+    def ao_dar_enter(self, event):
+        self.validar_data_do_entry()
+        if self.on_select: self.on_select(self.entry.get())
+        self.fechar()
+
+    def fechar(self):
+        try:
+            self.toplevel_pai.unbind("<Button-1>")
+            if self.entry:
+                self.entry.unbind("<KeyRelease>")
+                self.entry.unbind("<Return>")
+        except: pass
+        self.destroy()
+
     def montar_estrutura(self):
-        # Cabeçalho azul original
         header = ctk.CTkFrame(self, fg_color="#2980B9", corner_radius=0, height=35)
         header.pack(fill="x")
-        header.pack_propagate(False)
-
-        # Botões esquerda
-        ctk.CTkButton(header, text="<<", width=30, fg_color="transparent", hover_color="#1f5f8b",
-                      command=lambda: self.mudar_ano(-1)).pack(side="left", padx=5)
-        ctk.CTkButton(header, text="<", width=30, fg_color="transparent", hover_color="#1f5f8b",
-                      command=lambda: self.mudar_mes(-1)).pack(side="left", padx=2)
-
-        # Mês e ano centralizado
+        
+        btn_config = {"width": 30, "fg_color": "transparent", "hover_color": "#1f5f8b"}
+        ctk.CTkButton(header, text="<<", command=lambda: self.mudar_ano(-1), **btn_config).pack(side="left", padx=2)
+        ctk.CTkButton(header, text="<", command=lambda: self.mudar_mes(-1), **btn_config).pack(side="left", padx=2)
+        
         self.lbl_mes_ano = ctk.CTkLabel(header, text="", font=("Arial", 12, "bold"), text_color="white")
         self.lbl_mes_ano.pack(side="left", expand=True)
 
-        # Botões direita
-        ctk.CTkButton(header, text=">", width=30, fg_color="transparent", hover_color="#1f5f8b",
-                      command=lambda: self.mudar_mes(1)).pack(side="right", padx=2)
-        ctk.CTkButton(header, text=">>", width=30, fg_color="transparent", hover_color="#1f5f8b",
-                      command=lambda: self.mudar_ano(1)).pack(side="right", padx=5)
+        ctk.CTkButton(header, text=">", command=lambda: self.mudar_mes(1), **btn_config).pack(side="right", padx=2)
+        ctk.CTkButton(header, text=">>", command=lambda: self.mudar_ano(1), **btn_config).pack(side="right", padx=2)
 
-        # Dias da semana
         dias_frame = ctk.CTkFrame(self, fg_color="transparent")
-        dias_frame.pack(fill="x", padx=8, pady=(8, 4))
-        dias_semana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
-        for dia in dias_semana:
-            cor = "#2CC985" if dia in ["Dom", "Sáb"] else "#cccccc"
-            ctk.CTkLabel(dias_frame, text=dia, width=30, font=("Arial", 10, "bold"),
-                         text_color=cor).pack(side="left", expand=True)
+        dias_frame.pack(fill="x", padx=8, pady=(5, 0))
+        dias = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
+        for d in dias:
+            cor = "#2CC985" if d in ["Dom", "Sáb"] else "#ccc"
+            ctk.CTkLabel(dias_frame, text=d, width=30, font=("Arial", 9, "bold"), text_color=cor).pack(side="left", expand=True)
 
-        # Corpo do calendário
         self.corpo_cal = ctk.CTkFrame(self, fg_color="transparent")
-        self.corpo_cal.pack(fill="both", expand=True, padx=8, pady=(0, 8))
+        self.corpo_cal.pack(fill="both", expand=True, padx=8, pady=5)
 
     def atualizar_calendario(self):
-        for widget in self.corpo_cal.winfo_children():
-            widget.destroy()
-
-        meses_pt = ["", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-                    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
-        self.lbl_mes_ano.configure(text=f"{meses_pt[self.current_month]} {self.current_year}")
+        for w in self.corpo_cal.winfo_children(): w.destroy()
+        
+        meses = ["", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+                 "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
+        self.lbl_mes_ano.configure(text=f"{meses[self.current_month]} {self.current_year}")
 
         cal = calendar.monthcalendar(self.current_year, self.current_month)
-
-        for linha, semana in enumerate(cal):
-            for col, dia in enumerate(semana):
-                if dia == 0:
-                    ctk.CTkLabel(self.corpo_cal, text="").grid(row=linha, column=col)
+        for r, semana in enumerate(cal):
+            for c, dia in enumerate(semana):
+                if dia == 0: 
+                    ctk.CTkLabel(self.corpo_cal, text="", width=30).grid(row=r, column=c)
                     continue
-
-                data_atual = date(self.current_year, self.current_month, dia)
-                is_hoje = data_atual == date.today()
-                is_fds = col in (0, 6)  # Dom ou Sáb
-
-                if is_hoje:
-                    bg = "#2CC985"
-                    hover = "#1a9966"
-                    texto = "white"
-                elif is_fds:
-                    bg = "#3a3a3a"      # cinza mais claro para finais de semana
-                    hover = "#454545"
-                    texto = "#dddddd"
-                else:
-                    bg = "#333333"
-                    hover = "#3d3d3d"
-                    texto = "#ffffff"
-
-                btn = ctk.CTkButton(
-                    self.corpo_cal,
-                    text=str(dia),
-                    width=30,
-                    height=30,
-                    corner_radius=8,
-                    fg_color=bg,
-                    hover_color=hover,
-                    text_color=texto,
-                    font=("Arial", 11),
-                    command=lambda d=dia: self.selecionar_data(d)
-                )
-                btn.grid(row=linha, column=col, padx=2, pady=2)
+                
+                dt = date(self.current_year, self.current_month, dia)
+                is_selected = dt == self.selected_date
+                is_today = dt == date.today()
+                
+                bg_color = "#27AE60" if is_selected else ("#2CC985" if is_today else ("#3a3a3a" if c in [0,6] else "#333"))
+                fg_color = "white" if (is_selected or is_today) else "#ddd"
+                
+                btn = ctk.CTkButton(self.corpo_cal, text=str(dia), width=30, height=25, 
+                                    fg_color=bg_color, hover_color="#1a9966", text_color=fg_color,
+                                    command=lambda d=dia: self.selecionar_data(d))
+                btn.grid(row=r, column=c, padx=2, pady=2)
 
     def mudar_mes(self, delta):
         self.current_month += delta
         if self.current_month > 12:
-            self.current_month = 1
-            self.current_year += 1
+            self.current_month = 1; self.current_year += 1
         elif self.current_month < 1:
-            self.current_month = 12
-            self.current_year -= 1
+            self.current_month = 12; self.current_year -= 1
         self.atualizar_calendario()
 
     def mudar_ano(self, delta):
@@ -279,4 +306,4 @@ class CTkCalendar(ctk.CTkToplevel):
         data_sel = date(self.current_year, self.current_month, dia)
         if self.on_select:
             self.on_select(data_sel.strftime("%d/%m/%Y"))
-        self.destroy()
+        self.fechar()
