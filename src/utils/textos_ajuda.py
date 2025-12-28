@@ -47,32 +47,54 @@ Registre aqui tudo o que entra ou sai da sua padaria.
 🗑️ PERDA: Itens estragados.
 📦 REPOSIÇÃO: Move do Depósito para a Loja.
 """
+    },
+    "historico": {
+        "titulo": "📜 HISTÓRICO DE MOVIMENTAÇÕES",
+        "texto": """
+🎯 PARA QUE SERVE ESTA TELA?
+Consulte todas as entradas, saídas e produções realizadas no sistema.
+
+🔍 FILTROS DISPONÍVEIS:
+• Produto: Busca por um item específico.
+• Usuário: Quem realizou a operação.
+• Tipo: Filtra por Venda, Perda, Produção, etc.
+• Datas: Clique nos campos de data para abrir o calendário.
+
+💡 DICA:
+Clique nos títulos das colunas da tabela para ordenar os dados!
+"""
     }
 }
 
 def abrir_ajuda(master, topico):
+    """
+    Exibe uma janela de ajuda centralizada com base no tópico fornecido.
+
+    @param master: Janela ou Frame pai.
+    @param topico: Chave correspondente ao conteúdo no dicionário AJUDAS.
+    @return: None
+    """
     global _janela_ajuda_instancia
 
     # Se a janela já existe, apenas traz para frente
     if _janela_ajuda_instancia is not None and _janela_ajuda_instancia.winfo_exists():
-        _janela_ajuda_instancia.deiconify() # Caso esteja minimizada
+        _janela_ajuda_instancia.deiconify()
         _janela_ajuda_instancia.lift()
         _janela_ajuda_instancia.focus_force()
         return
 
-    if topico not in AJUDAS: return
+    if topico not in AJUDAS:
+        return
+        
     conteudo = AJUDAS[topico]
     
     # Criação da janela independente
     _janela_ajuda_instancia = ctk.CTkToplevel(master)
-    _janela_ajuda_instancia.title(f"NitecSystem - Manual")
+    _janela_ajuda_instancia.title("NitecSystem - Manual")
     _janela_ajuda_instancia.geometry("550x550")
     
     # Força a janela a aparecer no topo na criação
     _janela_ajuda_instancia.attributes("-topmost", True)
-    
-    # Após 500ms, removemos o "topmost" para que o usuário possa 
-    # clicar no programa e a ajuda possa ir para trás se ele desejar
     _janela_ajuda_instancia.after(500, lambda: _janela_ajuda_instancia.attributes("-topmost", False))
 
     # Conteúdo (Label e Scroll)
@@ -86,6 +108,5 @@ def abrir_ajuda(master, topico):
                        anchor="nw", padx=20, font=("Consolas", 13))
     lbl.pack(fill="both", expand=True)
 
-    # Garante o foco final
     _janela_ajuda_instancia.lift()
     _janela_ajuda_instancia.focus_force()

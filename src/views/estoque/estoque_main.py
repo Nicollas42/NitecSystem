@@ -85,18 +85,22 @@ class EstoqueFrame(ctk.CTkFrame):
     def ao_mudar_aba(self):
         """Limpa o foco e fecha dropdowns ao alternar entre abas."""
         aba_atual = self.tabview.get()
-        
-        # 1. Rouba o foco para o Tabview (limpa o cursor de qualquer Entry)
         self.tabview.focus_set()
         
-        # 2. Fecha popups de forma preventiva
         try:
+            # Abas existentes
             if hasattr(self, 'aba_cadastro'):
                 self.aba_cadastro.dropdown_cat.fechar_lista()
             if hasattr(self, 'aba_receitas'):
                 self.aba_receitas.dropdown_insumos.fechar_lista()
             if hasattr(self, 'aba_movimentacao'):
                 self.aba_movimentacao.dropdown_prod.fechar_lista()
+            
+            # ADICIONE ESTAS LINHAS PARA A ABA HISTÓRICO
+            if hasattr(self, 'aba_historico'):
+                self.aba_historico.dropdown_prod.fechar_lista()
+                self.aba_historico.dropdown_user.fechar_lista()
+                self.aba_historico.dropdown_tipo.fechar_lista()
         except:
             pass
         
