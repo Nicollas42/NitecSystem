@@ -5,7 +5,7 @@ import calendar
 
 class CTkFloatingDropdown:
     """
-    Dropdown flutuante com busca inteligente para CustomTkinter.
+    Dropdown flutuante robusto: Navegação (TAB), Busca, e Proteção contra conflitos de foco/clique.
     """
     def __init__(self, entry_widget, data_list, width=200, height=150, command=None):
         self.entry = entry_widget
@@ -21,25 +21,53 @@ class CTkFloatingDropdown:
         self.toplevel = self.entry.winfo_toplevel()
         self.last_x = None
         self.last_y = None
-
-        # --- CORREÇÃO AQUI ---
-        # Removido self.entry.bind("<FocusIn>") para evitar que a lista abra sozinha
-        # ao voltar de um modal ou Alt+Tab.
         
+        # Controle de Timers para evitar conflitos
+        self._after_id_abrir = None
+        self._after_id_fechar = None
+
+        # --- GESTÃO DE EVENTOS ---
         self.entry.bind("<KeyRelease>", self.ao_digitar)
         self.entry.bind("<Button-1>", self.ao_clicar)
         self.entry.bind("<Down>", self.mover_selecao_baixo)
         self.entry.bind("<Up>", self.mover_selecao_cima)
         self.entry.bind("<Return>", self.selecionar_via_enter)
         self.entry.bind("<Escape>", lambda e: self.fechar_e_limpar_foco())
-
-        self.toplevel.bind_all("<Button-1>", self.monitor_clique_global, add="+")
         
-        # Garante fechamento em eventos de janela
+        # FocusIn: Abre via TAB
+        self.entry.bind("<FocusIn>", self.agendar_abertura_foco)
+        # FocusOut: Fecha ao sair (com delay para permitir clique na lista)
+        self.entry.bind("<FocusOut>", self.agendar_fechamento_foco)
+
+        # Monitoramento Global
+        self.toplevel.bind_all("<Button-1>", self.monitor_clique_global, add="+")
         self.entry.bind("<Unmap>", lambda e: self.fechar_lista(), add="+")
         self.toplevel.bind("<Unmap>", lambda e: self.fechar_lista(), add="+")
         self.toplevel.bind("<Deactivate>", lambda e: self.fechar_lista())
         self.toplevel.bind("<Configure>", self._reposicionar_popup)
+
+    def agendar_abertura_foco(self, event):
+        # Se houver um fechamento pendente, cancela ele (prioriza manter aberto/reabrir)
+        if self._after_id_fechar:
+            self.entry.after_cancel(self._after_id_fechar)
+            self._after_id_fechar = None
+            
+        if self._after_id_abrir:
+            self.entry.after_cancel(self._after_id_abrir)
+        self._after_id_abrir = self.entry.after(150, self.ao_focar)
+
+    def ao_focar(self, event=None):
+        self._after_id_abrir = None
+        # Só abre se não tiver popup já
+        if not self.popup:
+            self.ao_digitar()
+
+    def agendar_fechamento_foco(self, event):
+        # Se houver abertura pendente, não cancelamos imediatamente, 
+        # pois o FocusOut acontece antes do clique na lista.
+        if self._after_id_fechar:
+            self.entry.after_cancel(self._after_id_fechar)
+        self._after_id_fechar = self.entry.after(150, self.fechar_lista)
 
     def _reposicionar_popup(self, event=None):
         if not self.popup or not self.popup.winfo_exists(): return
@@ -55,10 +83,15 @@ class CTkFloatingDropdown:
     def monitor_clique_global(self, event):
         try:
             widget_clicado = event.widget
+            # Se clicou no próprio Entry, deixa o evento <Button-1> dele cuidar
             if widget_clicado == self.entry_widget: return
+            
+            # Se clicou DENTRO do popup (na lista), não fecha
             if self.popup and self.popup.winfo_exists():
                 if str(widget_clicado).find(str(self.popup)) != -1: return
-            if self.popup: self.fechar_lista()
+            
+            # Clicou fora: fecha imediatamente
+            self.fechar_lista()
         except: pass
 
     def fechar_e_limpar_foco(self):
@@ -66,6 +99,15 @@ class CTkFloatingDropdown:
         self.toplevel.focus_set()
 
     def fechar_lista(self, event=None):
+        # CANCELAMENTO NUCLEAR: Remove qualquer tarefa agendada de abrir ou fechar
+        if self._after_id_abrir:
+            self.entry.after_cancel(self._after_id_abrir)
+            self._after_id_abrir = None
+        
+        if self._after_id_fechar:
+            self.entry.after_cancel(self._after_id_fechar)
+            self._after_id_fechar = None
+
         if self.popup:
             try: self.popup.destroy()
             except: pass
@@ -73,8 +115,10 @@ class CTkFloatingDropdown:
             self.last_x, self.last_y = None, None
 
     def ao_clicar(self, event):
-        self.fechar_lista()
-        # Delay pequeno para garantir que o clique foi processado
+        # Ao clicar, cancela fechamentos pendentes e força abertura
+        if self._after_id_fechar:
+            self.entry.after_cancel(self._after_id_fechar)
+            self._after_id_fechar = None
         self.entry.after(50, self._forcar_abertura)
 
     def _forcar_abertura(self):
@@ -112,7 +156,7 @@ class CTkFloatingDropdown:
 
     def ao_digitar(self, event=None):
         if self.bloquear_filtro: return
-        if event and event.keysym in ["Down", "Up", "Return", "Escape"]: return
+        if event and event.keysym in ["Down", "Up", "Return", "Escape", "Tab"]: return
         texto = self.entry.get().lower()
         filtrados = [i for i in self.data_list if texto in i.lower()] if texto else self.data_list
         self.mostrar_lista(filtrados)
@@ -152,7 +196,7 @@ class CTkFloatingDropdown:
 
 class CTkCalendar(ctk.CTkToplevel):
     """
-    Calendário flutuante que permite digitação manual no campo (Two-Way Binding).
+    Calendário flutuante que permite digitação e não fecha sozinho prematuramente.
     """
     def __init__(self, master, entry_widget=None, on_select=None):
         super().__init__(master)
@@ -160,14 +204,12 @@ class CTkCalendar(ctk.CTkToplevel):
         self.on_select = on_select
         self.toplevel_pai = self.entry.winfo_toplevel() if self.entry else master.winfo_toplevel()
         
-        # Dados iniciais
         self.selected_date = date.today()
         self.validar_data_do_entry()
             
         self.current_month = self.selected_date.month
         self.current_year = self.selected_date.year
         
-        # Configuração Visual
         self.wm_overrideredirect(True)
         self.transient(self.toplevel_pai)
         self.configure(fg_color="#2b2b2b")
@@ -176,16 +218,10 @@ class CTkCalendar(ctk.CTkToplevel):
         self.atualizar_calendario()
         self._posicionar()
 
-        # --- CORREÇÃO DE FOCO AQUI ---
-        # 1. Ativa monitoramento com delay
-        self.after(200, self.ativar_monitoramento)
+        self.after(250, self.ativar_monitores_fechamento)
         
         if self.entry:
-            # 2. Garante que o Entry tenha o foco para permitir digitação imediata
             self.after(100, lambda: self.entry.focus_set())
-            
-            # 3. Bindings de sincronia
-            self.entry.bind("<KeyRelease>", self.ao_digitar_data, add="+")
             self.entry.bind("<Return>", self.ao_dar_enter, add="+")
 
     def validar_data_do_entry(self):
@@ -194,9 +230,14 @@ class CTkCalendar(ctk.CTkToplevel):
             self.selected_date = datetime.strptime(val, "%d/%m/%Y").date()
         except: pass
 
-    def ativar_monitoramento(self):
+    def ativar_monitores_fechamento(self):
         self.toplevel_pai.bind("<Button-1>", self.monitor_clique_global, add="+")
         self.bind("<Escape>", lambda e: self.fechar())
+        if self.entry:
+            self.entry.bind("<FocusOut>", self.ao_perder_foco, add="+")
+
+    def ao_perder_foco(self, event):
+        self.after(150, self.fechar)
 
     def _posicionar(self):
         if self.entry:
@@ -208,14 +249,17 @@ class CTkCalendar(ctk.CTkToplevel):
     def monitor_clique_global(self, event):
         try:
             widget_clicado = event.widget
-            # Permite clicar e digitar no Entry
-            if str(self.entry) in str(widget_clicado): return
-            # Permite clicar no Calendário
-            if str(self) in str(widget_clicado): return
+            s_entry = str(self.entry)
+            s_widget = str(widget_clicado)
+            
+            if s_widget == s_entry or s_widget == str(self.entry._entry) or s_entry in s_widget:
+                return
+            if str(self) in s_widget:
+                return
             self.fechar()
         except: pass
 
-    def ao_digitar_data(self, event):
+    def ao_digitar_data(self, event=None):
         texto = self.entry.get()
         if len(texto) == 10:
             try:
@@ -235,7 +279,6 @@ class CTkCalendar(ctk.CTkToplevel):
         try:
             self.toplevel_pai.unbind("<Button-1>")
             if self.entry:
-                self.entry.unbind("<KeyRelease>")
                 self.entry.unbind("<Return>")
         except: pass
         self.destroy()
@@ -307,3 +350,32 @@ class CTkCalendar(ctk.CTkToplevel):
         if self.on_select:
             self.on_select(data_sel.strftime("%d/%m/%Y"))
         self.fechar()
+
+# -------------------------------------------------------------------------
+#  FUNÇÃO UTILITÁRIA GLOBAL
+# -------------------------------------------------------------------------
+
+def aplicar_mascara_data(event, entry):
+    """
+    Formata o campo de data (DD/MM/AAAA) enquanto o usuário digita.
+    """
+    if event.keysym in ["Return", "Escape", "Tab", "Up", "Down", "Left", "Right", "BackSpace", "Delete"]:
+        return
+
+    texto = entry.get()
+    numeros = "".join(filter(str.isdigit, texto))
+    numeros = numeros[:8]
+    
+    novo_texto = ""
+    if len(numeros) > 2:
+        novo_texto += numeros[:2] + "/"
+        if len(numeros) > 4:
+            novo_texto += numeros[2:4] + "/" + numeros[4:]
+        else:
+            novo_texto += numeros[2:]
+    else:
+        novo_texto = numeros
+
+    if texto != novo_texto:
+        entry.delete(0, "end")
+        entry.insert(0, novo_texto)

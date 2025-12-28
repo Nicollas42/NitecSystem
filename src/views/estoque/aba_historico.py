@@ -3,7 +3,8 @@ import customtkinter as ctk
 from tkinter import ttk, messagebox
 from datetime import datetime, date
 from src.models import database
-from src.utils.componentes_estilizados import CTkFloatingDropdown, CTkCalendar
+# Importa a função auxiliar 'aplicar_mascara_data'
+from src.utils.componentes_estilizados import CTkFloatingDropdown, CTkCalendar, aplicar_mascara_data
 
 class AbaHistorico(ctk.CTkFrame):
     def __init__(self, master, produtos_ref, callback_atualizar):
@@ -86,34 +87,41 @@ class AbaHistorico(ctk.CTkFrame):
         entry = ctk.CTkEntry(parent, width=90)
         entry.pack(side="left", padx=2)
         
-        # Ao clicar, chama a função de abrir o calendário
         entry.bind("<Button-1>", lambda e: self.abrir_calendario(e, entry))
+        entry.bind("<KeyRelease>", lambda e: self.ao_digitar_data_entry(e, entry))
         
         setattr(self, attr_name, entry)
 
-    def abrir_calendario(self, event, entry_widget):
-        print(f"DEBUG [Historico]: Clique detectado no campo data: {entry_widget}")
+    def ao_digitar_data_entry(self, event, entry_widget):
+        aplicar_mascara_data(event, entry_widget)
+
+        if event.keysym in ["Return", "Escape", "Tab"]: return
         
-        # --- SEGURANÇA: Fecha qualquer Dropdown que esteja aberto para evitar conflito visual ---
+        if self.popup_calendario and self.popup_calendario.winfo_exists():
+            if self.popup_calendario.entry == entry_widget:
+                self.popup_calendario.ao_digitar_data(event)
+                return
+
+        self.abrir_calendario(event, entry_widget)
+
+    def abrir_calendario(self, event, entry_widget):
+        # Fecha Dropdowns explicitamente antes de abrir o calendário
         if self.dropdown_prod: self.dropdown_prod.fechar_lista()
         if self.dropdown_user: self.dropdown_user.fechar_lista()
         if self.dropdown_tipo: self.dropdown_tipo.fechar_lista()
-        # ---------------------------------------------------------------------------------------
 
         if self.popup_calendario and self.popup_calendario.winfo_exists():
-            print("DEBUG [Historico]: Calendário já existe. Fechando anterior...")
-            try:
-                self.popup_calendario.fechar()
-            except:
-                self.popup_calendario.destroy()
+            if self.popup_calendario.entry == entry_widget:
+                self.popup_calendario.lift()
+                return
+            try: self.popup_calendario.fechar()
+            except: self.popup_calendario.destroy()
         
         def ao_escolher(data_str):
-            print(f"DEBUG [Historico]: Data escolhida: {data_str}")
             entry_widget.delete(0, 'end')
             entry_widget.insert(0, data_str)
             self.aplicar_filtro() 
         
-        print("DEBUG [Historico]: Abrindo novo calendário...")
         self.popup_calendario = CTkCalendar(self, entry_widget=entry_widget, on_select=ao_escolher)
 
     def restaurar_layout_colunas(self):
@@ -126,12 +134,10 @@ class AbaHistorico(ctk.CTkFrame):
             self.tree.column(col, width=width)
 
     def aplicar_filtro(self):
-        # print("DEBUG [Historico]: Aplicando filtros...") # Descomente se quiser muito spam
         self.restaurar_layout_colunas()
         self.filtrar_dados()
 
     def limpar_filtros(self):
-        print("DEBUG [Historico]: Limpando filtros...")
         self.resetar_datas_hoje()
         for e in [self.ent_prod, self.ent_user, self.ent_tipo]: e.delete(0, 'end')
         self.sort_col = None; self.sort_dir = "original"
@@ -226,5 +232,10 @@ class AbaHistorico(ctk.CTkFrame):
         except: return None
 
     def mostrar_ajuda(self):
+        # Fecha Dropdowns explicitamente antes de abrir a ajuda
+        if self.dropdown_prod: self.dropdown_prod.fechar_lista()
+        if self.dropdown_user: self.dropdown_user.fechar_lista()
+        if self.dropdown_tipo: self.dropdown_tipo.fechar_lista()
+        
         from src.utils.textos_ajuda import abrir_ajuda
         abrir_ajuda(self, "historico")
