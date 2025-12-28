@@ -1,7 +1,7 @@
-# view_financeiro.py
+# src/views/view_financeiro.py
 import customtkinter as ctk
 from tkinter import ttk, messagebox
-import database
+from src.models import database # CORREÇÃO AQUI
 
 class FinanceiroFrame(ctk.CTkFrame):
     def __init__(self, master, usuario_dados, callback_voltar):
@@ -9,9 +9,9 @@ class FinanceiroFrame(ctk.CTkFrame):
         self.voltar_menu = callback_voltar
         
         # Coleta dados
-        self.vendas = database.carregar_vendas()
-        self.sobras = database.carregar_sobras()
-        self.produtos = database.PRODUTOS
+        self.vendas = database.carregar_json(database.ARQ_VENDAS)
+        self.movimentos = database.carregar_json(database.ARQ_MOVIMENTOS) # Usar movimentos para ver perdas
+        self.produtos = database.carregar_produtos()
 
         self.montar_layout()
 
@@ -34,10 +34,15 @@ class FinanceiroFrame(ctk.CTkFrame):
         qtd_vendas = len(self.vendas)
         
         total_perdas = 0
-        for s in self.sobras:
+        # Filtra apenas movimentos de PERDA
+        sobras = [m for m in self.movimentos if m['tipo'] == 'PERDA']
+        
+        for s in sobras:
             cod = s['cod']
+            # Busca preço atual
             preco = self.produtos[cod]['preco'] if cod in self.produtos else 0
-            total_perdas += (s['qtd'] * preco)
+            # s['qtd'] em PERDA é negativo, usamos abs() para somar o valor positivo
+            total_perdas += (abs(s['qtd']) * preco)
 
         lucro_bruto = total_vendas - total_perdas
 

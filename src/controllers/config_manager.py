@@ -1,9 +1,11 @@
-# config_manager.py
+# src/controllers/config_manager.py
 import json
 import os
 import customtkinter as ctk
 
-ARQUIVO_CONFIG = "config_pdv.json"
+# Caminho ajustado para a nova estrutura de pastas
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ARQUIVO_CONFIG = os.path.join(BASE_DIR, "dados", "config_pdv.json")
 
 def carregar_config():
     padrao = {"modo": "Dark", "cor_destaque": "#2CC985"}
@@ -14,13 +16,6 @@ def carregar_config():
             return json.load(f)
     except:
         return padrao
-
-def salvar_config(nova_config):
-    try:
-        with open(ARQUIVO_CONFIG, "w") as f:
-            json.dump(nova_config, f)
-    except:
-        pass
 
 def aplicar_tema_inicial():
     cfg = carregar_config()

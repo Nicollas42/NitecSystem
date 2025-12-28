@@ -1,0 +1,62 @@
+{
+    "101": {
+        "id": "101",
+        "nome": "PÃO FRANCÊS",
+        "unidade": "KG",
+        "categoria": "Panificação",
+        "preco": 12.9,
+        "estoque_minimo": 5.0,
+        "estoque_atual": -50.412,
+        "estoque_fundo": 0.0,
+        "controla_estoque": false,
+        "ativo": true
+    },
+    "102": {
+        "id": "102",
+        "nome": "LEITE INTEGRAL 1L",
+        "unidade": "UN",
+        "categoria": "Bebidas",
+        "preco": 6.5,
+        "estoque_minimo": 12.0,
+        "estoque_atual": -170.0,
+        "estoque_fundo": 48.0,
+        "controla_estoque": true,
+        "ativo": true
+    },
+    "103": {
+        "id": "103",
+        "nome": "CAFÉ EXPRESSO",
+        "unidade": "UN",
+        "categoria": "Bebidas",
+        "preco": 4.0,
+        "estoque_minimo": 0.0,
+        "estoque_atual": -126.0,
+        "estoque_fundo": 0.0,
+        "controla_estoque": false,
+        "ativo": true
+    },
+    "104": {
+        "id": "104",
+        "nome": "QUEIJO MUSSARELA",
+        "unidade": "KG",
+        "categoria": "Frios",
+        "preco": 49.9,
+        "estoque_minimo": 2.0,
+        "estoque_atual": -63.897,
+        "estoque_fundo": 10.0,
+        "controla_estoque": true,
+        "ativo": true
+    },
+    "105": {
+        "id": "105",
+        "nome": "COCA COLA 2L",
+        "unidade": "UN",
+        "categoria": "Bebidas",
+        "preco": 14.0,
+        "estoque_minimo": 10.0,
+        "estoque_atual": -179.0,
+        "estoque_fundo": 60.0,
+        "controla_estoque": true,
+        "ativo": true
+    }
+}
