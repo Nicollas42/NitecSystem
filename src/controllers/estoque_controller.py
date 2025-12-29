@@ -84,24 +84,49 @@ class EstoqueController:
 
     def salvar_produto(self, dados_produto):
         """
-        Cadastra ou atualiza um produto/insumo no banco de dados.
-
-        :param dados_produto: Dicionário contendo os campos do formulário.
-        :return: True (Sempre assume sucesso na validação simples).
+        Cadastra ou atualiza com validação de duplicidade (Nome e EAN).
+        Retorna: (bool, str_mensagem)
         """
         produtos = self.db.carregar_produtos()
-        cod = str(dados_produto['id'])
+        novo_id = str(dados_produto['id'])
+        novo_nome = dados_produto['nome'].strip().upper()
+        
+        # Garante que é uma lista, mesmo se vier vazio
+        novos_eans = dados_produto.get('codigos_barras', []) 
+        if isinstance(novos_eans, str): novos_eans = [] # Proteção extra
 
-        # Mantém estoques existentes se for edição
-        estoque_frente = produtos[cod].get('estoque_atual', 0.0) if cod in produtos else 0.0
-        estoque_fundo = produtos[cod].get('estoque_fundo', 0.0) if cod in produtos else 0.0
+        # --- VALIDAÇÃO DE DUPLICIDADE ---
+        for pid, prod in produtos.items():
+            # Se for o mesmo ID que estamos editando, pula (não é conflito com ele mesmo)
+            if pid == novo_id:
+                continue
+
+            # 1. Valida Nome Duplicado
+            nome_existente = prod['nome'].strip().upper()
+            if nome_existente == novo_nome:
+                return False, f"O nome '{novo_nome}' já está em uso pelo item {pid}."
+
+            # 2. Valida Código de Barras Duplicado
+            eans_existentes = prod.get('codigos_barras', [])
+            # A interseção verifica se existe algum elemento em comum nas duas listas
+            conflitos = set(novos_eans).intersection(set(eans_existentes))
+            
+            if conflitos:
+                cod_conflitante = list(conflitos)[0]
+                return False, f"O código de barras '{cod_conflitante}' já pertence ao item:\n{pid} - {prod['nome']}"
+        # --------------------------------
+
+        # Se passou pelas validações, prepara para salvar
+        estoque_frente = produtos[novo_id].get('estoque_atual', 0.0) if novo_id in produtos else 0.0
+        estoque_fundo = produtos[novo_id].get('estoque_fundo', 0.0) if novo_id in produtos else 0.0
 
         novo_produto = {
-            "id": cod,
-            "nome": dados_produto['nome'].strip().upper(),
+            "id": novo_id,
+            "nome": novo_nome,
+            "codigos_barras": novos_eans, # Salva a lista correta
             "unidade": dados_produto.get('unidade', 'UN'), 
             "categoria": dados_produto.get('categoria', 'Outros'),
-            "tipo": dados_produto.get('tipo', 'PRODUTO'), # INSUMO ou PRODUTO
+            "tipo": dados_produto.get('tipo', 'PRODUTO'),
             "controla_estoque": dados_produto.get('controla_estoque', True),
             "estoque_atual": estoque_frente, 
             "estoque_fundo": estoque_fundo,
@@ -110,10 +135,11 @@ class EstoqueController:
             "custo": float(str(dados_produto.get('custo', 0)).replace(',', '.')),
             "ativo": True
         }
-        produtos[cod] = novo_produto
+        produtos[novo_id] = novo_produto
         self.db.salvar_produtos(produtos)
-        return True
-
+        
+        return True, "Produto salvo com sucesso!"
+    
     def transferir_fundo_para_frente(self, produto_id, qtd, usuario="admin", motivo=None):
         """
         Transfere mercadoria do Depósito (Fundo) para a Loja (Frente).

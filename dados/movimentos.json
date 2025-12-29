@@ -2121,5 +2121,170 @@
         "novo": 19.0,
         "motivo": "Venda PDV",
         "usuario": "Admin (Dev)"
+    },
+    {
+        "data": "2025-12-28 18:17:16",
+        "tipo": "SAIDA_PRODUCAO_FUNDO",
+        "cod": "1004",
+        "nome": "AÇÚCAR CRISTAL",
+        "qtd": 400.0,
+        "anterior": 417.98,
+        "novo": 17.980000000000018,
+        "motivo": "Prod. 40 COXINHA DE FRANGO C/ CATUPIRY",
+        "usuario": "Admin"
+    },
+    {
+        "data": "2025-12-28 18:17:16",
+        "tipo": "SAIDA_PRODUCAO_FUNDO",
+        "cod": "1029",
+        "nome": "CALABRESA DEFUMADA",
+        "qtd": 400.0,
+        "anterior": 123.0,
+        "novo": -277.0,
+        "motivo": "Prod. 40 COXINHA DE FRANGO C/ CATUPIRY",
+        "usuario": "Admin"
+    },
+    {
+        "data": "2025-12-28 18:17:16",
+        "tipo": "SAIDA_PRODUCAO_FUNDO",
+        "cod": "1002",
+        "nome": "FERMENTO BIOLÓGICO SECO",
+        "qtd": 400.0,
+        "anterior": 2182.002,
+        "novo": 1782.002,
+        "motivo": "Prod. 40 COXINHA DE FRANGO C/ CATUPIRY",
+        "usuario": "Admin"
+    },
+    {
+        "data": "2025-12-28 18:17:16",
+        "tipo": "ENTRADA_PRODUCAO_FUNDO",
+        "cod": "2011",
+        "nome": "COXINHA DE FRANGO C/ CATUPIRY",
+        "qtd": 40.0,
+        "anterior": 40.0,
+        "novo": 80.0,
+        "motivo": "Produção Concluída",
+        "usuario": "Admin"
+    },
+    {
+        "data": "2025-12-28 18:18:19",
+        "tipo": "SAIDA_VENDA",
+        "cod": "2011",
+        "nome": "COXINHA DE FRANGO C/ CATUPIRY",
+        "qtd": -1.0,
+        "anterior": 60.0,
+        "novo": 59.0,
+        "motivo": "Venda PDV",
+        "usuario": "Admin (Dev)"
+    },
+    {
+        "data": "2025-12-28 18:18:19",
+        "tipo": "SAIDA_VENDA",
+        "cod": "2011",
+        "nome": "COXINHA DE FRANGO C/ CATUPIRY",
+        "qtd": -1.0,
+        "anterior": 59.0,
+        "novo": 58.0,
+        "motivo": "Venda PDV",
+        "usuario": "Admin (Dev)"
+    },
+    {
+        "data": "2025-12-29 00:43:27",
+        "tipo": "ENTRADA_FUNDO",
+        "cod": "11111",
+        "nome": "111111",
+        "qtd": 200.0,
+        "anterior": 0.0,
+        "novo": 200.0,
+        "motivo": "xxxx",
+        "usuario": "Admin"
+    },
+    {
+        "data": "2025-12-29 00:43:40",
+        "tipo": "TRANSFERENCIA",
+        "cod": "11111",
+        "nome": "111111",
+        "qtd": 2.0,
+        "anterior": 0.0,
+        "novo": 2.0,
+        "motivo": "🚨 REPOSIÇÃO DIRETA CAIXA",
+        "usuario": "Admin (Dev)"
+    },
+    {
+        "data": "2025-12-29 00:43:51",
+        "tipo": "SAIDA_VENDA",
+        "cod": "11111",
+        "nome": "111111",
+        "qtd": -2.0,
+        "anterior": 2.0,
+        "novo": 0.0,
+        "motivo": "Venda PDV",
+        "usuario": "Admin (Dev)"
+    },
+    {
+        "data": "2025-12-29 00:44:17",
+        "tipo": "TRANSFERENCIA",
+        "cod": "11111",
+        "nome": "111111",
+        "qtd": 3.0,
+        "anterior": 0.0,
+        "novo": 3.0,
+        "motivo": "🚨 REPOSIÇÃO DIRETA CAIXA",
+        "usuario": "Admin (Dev)"
+    },
+    {
+        "data": "2025-12-29 00:44:24",
+        "tipo": "SAIDA_VENDA",
+        "cod": "11111",
+        "nome": "111111",
+        "qtd": -3.0,
+        "anterior": 3.0,
+        "novo": 0.0,
+        "motivo": "Venda PDV",
+        "usuario": "Admin (Dev)"
+    },
+    {
+        "data": "2025-12-29 00:46:55",
+        "tipo": "ENTRADA_FUNDO",
+        "cod": "10043",
+        "nome": "AÇÚCAR CRISTAL2",
+        "qtd": 200.0,
+        "anterior": 0.0,
+        "novo": 200.0,
+        "motivo": "",
+        "usuario": "Admin"
+    },
+    {
+        "data": "2025-12-29 00:47:06",
+        "tipo": "ENTRADA_FUNDO",
+        "cod": "10043",
+        "nome": "AÇÚCAR CRISTAL2",
+        "qtd": 1111.0,
+        "anterior": 200.0,
+        "novo": 1311.0,
+        "motivo": "",
+        "usuario": "Admin"
+    },
+    {
+        "data": "2025-12-29 00:47:17",
+        "tipo": "TRANSFERENCIA",
+        "cod": "10043",
+        "nome": "AÇÚCAR CRISTAL2",
+        "qtd": 1.0,
+        "anterior": 0.0,
+        "novo": 1.0,
+        "motivo": "🚨 REPOSIÇÃO DIRETA CAIXA",
+        "usuario": "Admin (Dev)"
+    },
+    {
+        "data": "2025-12-29 00:47:21",
+        "tipo": "SAIDA_VENDA",
+        "cod": "10043",
+        "nome": "AÇÚCAR CRISTAL2",
+        "qtd": -1.0,
+        "anterior": 1.0,
+        "novo": 0.0,
+        "motivo": "Venda PDV",
+        "usuario": "Admin (Dev)"
     }
 ]

@@ -2,6 +2,7 @@
     "101": {
         "id": "101",
         "nome": "PÃO FRANCÊS",
+        "codigos_barras": [],
         "unidade": "KG",
         "categoria": "Panificação",
         "preco": 12.9,
@@ -14,6 +15,7 @@
     "102": {
         "id": "102",
         "nome": "LEITE INTEGRAL 1L",
+        "codigos_barras": ["7891000100100"],
         "unidade": "UN",
         "categoria": "Bebidas",
         "preco": 6.5,
@@ -26,6 +28,7 @@
     "103": {
         "id": "103",
         "nome": "CAFÉ EXPRESSO",
+        "codigos_barras": [],
         "unidade": "UN",
         "categoria": "Bebidas",
         "preco": 4.0,
@@ -38,6 +41,7 @@
     "104": {
         "id": "104",
         "nome": "QUEIJO MUSSARELA",
+        "codigos_barras": [],
         "unidade": "KG",
         "categoria": "Frios",
         "preco": 49.9,
@@ -50,6 +54,7 @@
     "105": {
         "id": "105",
         "nome": "COCA COLA 2L",
+        "codigos_barras": ["7894900011517", "7891010101010"],
         "unidade": "UN",
         "categoria": "Bebidas",
         "preco": 14.0,

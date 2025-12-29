@@ -88,23 +88,22 @@
     "2011": {
         "id_produto": "2011",
         "nome": "COXINHA DE FRANGO C/ CATUPIRY",
-        "rendimento": 100.0,
+        "rendimento": 30.0,
         "ingredientes": [
             {
-                "id": "1001",
-                "qtd": 3.0
+                "id": "1004",
+                "nome": "AÇÚCAR CRISTAL",
+                "qtd": "0300"
             },
             {
-                "id": "1008",
-                "qtd": 0.5
+                "id": "1029",
+                "nome": "CALABRESA DEFUMADA",
+                "qtd": "0300"
             },
             {
-                "id": "1027",
-                "qtd": 4.0
-            },
-            {
-                "id": "1005",
-                "qtd": 3.0
+                "id": "1002",
+                "nome": "FERMENTO BIOLÓGICO SECO",
+                "qtd": "0300"
             }
         ]
     },

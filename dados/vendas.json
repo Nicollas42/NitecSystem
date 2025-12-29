@@ -79,5 +79,75 @@
         ],
         "operador": "Admin (Dev)",
         "pagamento": "Pix"
+    },
+    {
+        "id": 1766956699,
+        "data": "28/12/2025 18:18",
+        "total": 6.5,
+        "itens": [
+            {
+                "produto": "COXINHA DE FRANGO C/ CATUPIRY",
+                "qtd": 1,
+                "total": 6.5
+            }
+        ],
+        "operador": "Admin (Dev)",
+        "pagamento": "Pix"
+    },
+    {
+        "id": 1766956699,
+        "data": "28/12/2025 18:18",
+        "total": 6.5,
+        "itens": [
+            {
+                "produto": "COXINHA DE FRANGO C/ CATUPIRY",
+                "qtd": 1,
+                "total": 6.5
+            }
+        ],
+        "operador": "Admin (Dev)",
+        "pagamento": "Pix"
+    },
+    {
+        "id": 1766979831,
+        "data": "29/12/2025 00:43",
+        "total": 0.0,
+        "itens": [
+            {
+                "produto": "111111",
+                "qtd": 2.0,
+                "total": 0.0
+            }
+        ],
+        "operador": "Admin (Dev)",
+        "pagamento": "Pix"
+    },
+    {
+        "id": 1766979864,
+        "data": "29/12/2025 00:44",
+        "total": 0.0,
+        "itens": [
+            {
+                "produto": "111111",
+                "qtd": 3.0,
+                "total": 0.0
+            }
+        ],
+        "operador": "Admin (Dev)",
+        "pagamento": "Crédito"
+    },
+    {
+        "id": 1766980041,
+        "data": "29/12/2025 00:47",
+        "total": 0.0,
+        "itens": [
+            {
+                "produto": "AÇÚCAR CRISTAL2",
+                "qtd": 1.0,
+                "total": 0.0
+            }
+        ],
+        "operador": "Admin (Dev)",
+        "pagamento": "Crédito"
     }
 ]
