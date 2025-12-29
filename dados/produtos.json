@@ -846,5 +846,23 @@
         "preco": 0.0,
         "custo": 0.0,
         "ativo": true
+    },
+    "2234": {
+        "id": "2234",
+        "nome": "COCA COLA26",
+        "codigos_barras": [
+            "78949000115178"
+        ],
+        "unidade": "UN",
+        "categoria": "Confeitaria",
+        "tipo": "PRODUTO",
+        "controla_estoque": true,
+        "estoque_atual": 0.0,
+        "estoque_fundo": 0.0,
+        "estoque_minimo": 0.0,
+        "preco": 0.0,
+        "custo": 0.0,
+        "data_cadastro": "29/12/2025",
+        "ativo": true
     }
 }

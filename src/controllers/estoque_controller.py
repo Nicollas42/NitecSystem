@@ -1,6 +1,7 @@
 # src/controllers/estoque_controller.py
 import datetime
 import os 
+from datetime import datetime as dt # Alias para evitar conflito de nomes
 from src.models import database
 
 # Constantes de Movimentação
@@ -13,44 +14,24 @@ TIPO_AJUSTE_SOBRA = "ENTRADA_AJUSTE"
 
 class EstoqueController:
     """
-    Controlador responsável pela lógica de negócio do estoque, incluindo
-    movimentações, transferências, gestão de receitas e registro de produção.
+    Controlador responsável pela lógica de negócio do estoque.
     """
 
     def __init__(self):
-        """
-        Inicializa o controlador carregando as referências do banco de dados.
-        """
         self.db = database
         self.ARQ_RECEITAS = os.path.join(self.db.DATA_DIR, "receitas.json")
 
     def carregar_receitas(self):
-        """
-        Carrega o arquivo JSON contendo todas as fichas técnicas.
-
-        :return: Dicionário com as receitas cadastradas.
-        """
         return self.db.carregar_json(self.ARQ_RECEITAS)
 
     def salvar_receita(self, id_produto, rendimento, ingredientes):
-        """
-        Salva ou atualiza uma ficha técnica e recalcula automaticamente o 
-        Preço de Custo do produto final com base nos ingredientes.
-
-        :param id_produto: ID do produto final (ex: Pão Francês).
-        :param rendimento: Quantidade que a receita rende (base de cálculo).
-        :param ingredientes: Lista de dicionários com 'id' e 'qtd' dos insumos.
-        :return: Tupla (bool, str) indicando sucesso ou mensagem de erro.
-        """
         id_produto = str(id_produto)
-        
         receitas = self.carregar_receitas()
         produtos = self.db.carregar_produtos()
         
         if id_produto not in produtos:
             return False, f"Produto ID {id_produto} não encontrado no cadastro."
 
-        # 1. Estrutura e Salva a Receita
         receitas[id_produto] = {
             "id_produto": id_produto,
             "nome": produtos[id_produto]['nome'],
@@ -59,7 +40,7 @@ class EstoqueController:
         }
         self.db.salvar_json(self.ARQ_RECEITAS, receitas)
 
-        # 2. Calcula o Custo Unitário (Baseado no custo atual dos insumos)
+        # Recalcula Custo
         custo_total_receita = 0.0
         for ing in ingredientes:
             insumo_id = str(ing['id'])
@@ -69,14 +50,12 @@ class EstoqueController:
                 qtd_usada = float(ing['qtd'])
                 custo_total_receita += (custo_ingrediente * qtd_usada)
         
-        # Evita divisão por zero
         rendimento_float = float(rendimento)
         if rendimento_float > 0:
             custo_unitario = custo_total_receita / rendimento_float
         else:
             custo_unitario = 0.0
 
-        # 3. Atualiza o Custo no Cadastro do Produto Final
         produtos[id_produto]['custo'] = round(custo_unitario, 4)
         self.db.salvar_produtos(produtos)
 
@@ -85,30 +64,23 @@ class EstoqueController:
     def salvar_produto(self, dados_produto):
         """
         Cadastra ou atualiza com validação de duplicidade (Nome e EAN).
-        Retorna: (bool, str_mensagem)
         """
         produtos = self.db.carregar_produtos()
         novo_id = str(dados_produto['id'])
         novo_nome = dados_produto['nome'].strip().upper()
         
-        # Garante que é uma lista, mesmo se vier vazio
         novos_eans = dados_produto.get('codigos_barras', []) 
-        if isinstance(novos_eans, str): novos_eans = [] # Proteção extra
+        if isinstance(novos_eans, str): novos_eans = []
 
         # --- VALIDAÇÃO DE DUPLICIDADE ---
         for pid, prod in produtos.items():
-            # Se for o mesmo ID que estamos editando, pula (não é conflito com ele mesmo)
-            if pid == novo_id:
-                continue
+            if pid == novo_id: continue
 
-            # 1. Valida Nome Duplicado
             nome_existente = prod['nome'].strip().upper()
             if nome_existente == novo_nome:
                 return False, f"O nome '{novo_nome}' já está em uso pelo item {pid}."
 
-            # 2. Valida Código de Barras Duplicado
             eans_existentes = prod.get('codigos_barras', [])
-            # A interseção verifica se existe algum elemento em comum nas duas listas
             conflitos = set(novos_eans).intersection(set(eans_existentes))
             
             if conflitos:
@@ -116,14 +88,18 @@ class EstoqueController:
                 return False, f"O código de barras '{cod_conflitante}' já pertence ao item:\n{pid} - {prod['nome']}"
         # --------------------------------
 
-        # Se passou pelas validações, prepara para salvar
-        estoque_frente = produtos[novo_id].get('estoque_atual', 0.0) if novo_id in produtos else 0.0
-        estoque_fundo = produtos[novo_id].get('estoque_fundo', 0.0) if novo_id in produtos else 0.0
+        # Recupera dados existentes para preservar
+        item_atual = produtos.get(novo_id, {})
+        estoque_frente = item_atual.get('estoque_atual', 0.0)
+        estoque_fundo = item_atual.get('estoque_fundo', 0.0)
+        
+        # Preserva a data de cadastro ou cria hoje se for novo
+        data_cadastro = item_atual.get('data_cadastro', dt.now().strftime("%d/%m/%Y"))
 
         novo_produto = {
             "id": novo_id,
             "nome": novo_nome,
-            "codigos_barras": novos_eans, # Salva a lista correta
+            "codigos_barras": novos_eans,
             "unidade": dados_produto.get('unidade', 'UN'), 
             "categoria": dados_produto.get('categoria', 'Outros'),
             "tipo": dados_produto.get('tipo', 'PRODUTO'),
@@ -133,23 +109,15 @@ class EstoqueController:
             "estoque_minimo": float(str(dados_produto.get('minimo', 0)).replace(',', '.')),
             "preco": float(str(dados_produto.get('preco', 0)).replace(',', '.')),
             "custo": float(str(dados_produto.get('custo', 0)).replace(',', '.')),
+            "data_cadastro": data_cadastro, # <--- CAMPO NOVO
             "ativo": True
         }
         produtos[novo_id] = novo_produto
         self.db.salvar_produtos(produtos)
         
         return True, "Produto salvo com sucesso!"
-    
-    def transferir_fundo_para_frente(self, produto_id, qtd, usuario="admin", motivo=None):
-        """
-        Transfere mercadoria do Depósito (Fundo) para a Loja (Frente).
 
-        :param produto_id: ID do produto.
-        :param qtd: Quantidade a ser transferida.
-        :param usuario: Nome do usuário realizando a ação.
-        :param motivo: Texto opcional explicando a ação.
-        :return: Tupla (bool, str).
-        """
+    def transferir_fundo_para_frente(self, produto_id, qtd, usuario="admin", motivo=None):
         produtos = self.db.carregar_produtos()
         produto_id = str(produto_id)
         
@@ -183,17 +151,6 @@ class EstoqueController:
         return True, f"Transferência de {qtd_num} realizada!"
     
     def movimentar_estoque(self, produto_id, qtd, tipo_mov, motivo="", usuario="Admin", local="fundo"):
-        """
-        Realiza uma movimentação genérica de entrada ou saída manual.
-
-        :param produto_id: ID do item.
-        :param qtd: Quantidade movimentada.
-        :param tipo_mov: Constante de tipo (ENTRADA, SAIDA, PERDA).
-        :param motivo: Descrição da movimentação.
-        :param usuario: Usuário responsável.
-        :param local: 'frente' ou 'fundo'.
-        :return: Tupla (bool, str).
-        """
         produtos = self.db.carregar_produtos()
         produto_id = str(produto_id)
         
@@ -210,7 +167,6 @@ class EstoqueController:
 
         saldo_anterior = prod.get(chave_estoque, 0.0)
         
-        # Verifica se é entrada ou saída baseado na string do tipo
         if "ENTRADA" in tipo_mov.upper():
             novo_saldo = saldo_anterior + qtd_num
         else:
@@ -227,20 +183,10 @@ class EstoqueController:
         return True, f"{tipo_mov} realizada. Novo saldo: {novo_saldo:.2f}"
     
     def registrar_producao(self, id_produto_final, qtd_produzida, usuario):
-        """
-        Registra a produção de um item final e baixa automaticamente os insumos
-        proporcionalmente à ficha técnica.
-
-        :param id_produto_final: ID do produto que foi fabricado (ex: Pão).
-        :param qtd_produzida: Quantidade fabricada (ex: 50 un).
-        :param usuario: Usuário responsável.
-        :return: Tupla (bool, str).
-        """
         id_produto_final = str(id_produto_final)
         try:
             receitas = self.carregar_receitas()
             
-            # Se não tem receita, faz apenas entrada simples
             if id_produto_final not in receitas:
                 self.movimentar_estoque(
                     id_produto_final, qtd_produzida, TIPO_ENTRADA_PRODUCAO, 
@@ -251,10 +197,8 @@ class EstoqueController:
             receita = receitas[id_produto_final]
             rendimento_base = float(receita.get('rendimento', 1))
             
-            # FATOR PROPORCIONAL: Se a receita é pra 10 e fiz 5, o fator é 0.5
             fator_multiplicador = float(qtd_produzida) / rendimento_base
             
-            # 1. Baixa os Insumos (Proporcionalmente)
             for ing in receita['ingredientes']:
                 qtd_necessaria = float(ing['qtd']) * fator_multiplicador
                 self.movimentar_estoque(
@@ -262,7 +206,6 @@ class EstoqueController:
                     f"Prod. {qtd_produzida} {receita['nome']}", usuario, "fundo"
                 )
             
-            # 2. Dá entrada no Produto Final (Geralmente vai pro Fundo/Depósito primeiro)
             self.movimentar_estoque(
                 id_produto_final, qtd_produzida, TIPO_ENTRADA_PRODUCAO, 
                 "Produção Concluída", usuario, "fundo"
