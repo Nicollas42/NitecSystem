@@ -2,6 +2,7 @@
 import customtkinter as ctk
 from tkinter import ttk, messagebox
 from src.utils.textos_ajuda import abrir_ajuda
+from src.utils.formata_numeros_br import formata_numeros_br
 
 class AbaProducao(ctk.CTkFrame):
     def __init__(self, master, controller, produtos_ref, callback_atualizar):
@@ -76,7 +77,11 @@ class AbaProducao(ctk.CTkFrame):
             unidade_prod = self.produtos.get(id_prod, {}).get('unidade', 'UN')
             self.id_selecionado = id_prod
             self.lbl_titulo.configure(text=receita['nome'])
-            self.lbl_subtitulo.configure(text=f"Receita Base para: {receita['rendimento']} {unidade_prod}")
+            
+            # Formatação do rendimento da receita
+            rendimento_fmt = formata_numeros_br(receita['rendimento'], moeda=False)
+            
+            self.lbl_subtitulo.configure(text=f"Receita Base para: {rendimento_fmt} {unidade_prod}")
             self.lbl_unidade_input.configure(text=unidade_prod)
             self.btn_produzir.configure(state="normal")
             self.renderizar_ingredientes(receita['ingredientes'])
@@ -85,7 +90,11 @@ class AbaProducao(ctk.CTkFrame):
         for w in self.scroll_ingredientes.winfo_children(): w.destroy()
         for ing in ingredientes:
             un = self.produtos.get(str(ing['id']), {}).get('unidade', 'UN')
-            ctk.CTkLabel(self.scroll_ingredientes, text=f"• {ing['qtd']} {un} - {ing['nome']}", anchor="w").pack(fill="x", padx=5)
+            
+            # Formatação da quantidade de cada ingrediente (opcional, mas recomendado)
+            qtd_ing_fmt = formata_numeros_br(ing['qtd'], moeda=False)
+            
+            ctk.CTkLabel(self.scroll_ingredientes, text=f"• {qtd_ing_fmt} {un} - {ing['nome']}", anchor="w").pack(fill="x", padx=5)
 
     def confirmar_producao(self):
         qtd = self.ent_qtd.get().replace(",", ".")

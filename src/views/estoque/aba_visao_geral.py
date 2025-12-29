@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from tkinter import ttk
+from src.utils.formata_numeros_br import formata_numeros_br
 
 class AbaVisaoGeral(ctk.CTkFrame):
     def __init__(self, master, callback_atualizar):
@@ -47,7 +48,12 @@ class AbaVisaoGeral(ctk.CTkFrame):
                 if frente <= minimo and fundo > 0: tag = 'atencao'
                 elif frente <= minimo and fundo <= 0: tag = 'baixo_estoque'
 
+            # Aplicação da formatação modular
+            min_fmt = formata_numeros_br(minimo, moeda=False)
+            fundo_fmt = formata_numeros_br(fundo, moeda=False)
+            frente_fmt = formata_numeros_br(frente, moeda=False)
+
             self.tree.insert("", "end", values=(
                 cod, p['nome'], p.get('categoria', '-'), p.get('unidade', 'UN'),
-                minimo, fundo, frente
+                min_fmt, fundo_fmt, frente_fmt
             ), tags=(tag,))

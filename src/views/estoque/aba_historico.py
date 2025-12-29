@@ -3,8 +3,9 @@ import customtkinter as ctk
 from tkinter import ttk, messagebox
 from datetime import datetime, date
 from src.models import database
-# Importa a função auxiliar 'aplicar_mascara_data'
+# Importa a função auxiliar 'aplicar_mascara_data' e a NOVA função de formatação
 from src.utils.componentes_estilizados import CTkFloatingDropdown, CTkCalendar, aplicar_mascara_data
+from src.utils.formata_numeros_br import formata_numeros_br
 
 class AbaHistorico(ctk.CTkFrame):
     def __init__(self, master, produtos_ref, callback_atualizar):
@@ -169,8 +170,13 @@ class AbaHistorico(ctk.CTkFrame):
             qtd = float(m.get('qtd', 0)); is_insumo = p.get('tipo') == 'INSUMO'
             base = p.get('custo', 0.0) if (is_insumo or 'PRODUCAO' in m.get('tipo', '') or 'ENTRADA' in m.get('tipo', '')) else p.get('preco', 0.0)
             v_total = abs(qtd) * base
+            
+            # --- USO DA NOVA FUNÇÃO AQUI ---
+            qtd_fmt = formata_numeros_br(qtd, moeda=False)
+            valor_fmt = formata_numeros_br(v_total, moeda=True)
+            
             linhas.append({
-                'display': (self.formatar_data_br(data_raw), m.get('tipo'), m.get('nome'), f"{self.formatar_numero_inteligente(qtd)} {p.get('unidade', 'UN')}", f"R$ {v_total:.2f}", m.get('usuario'), m.get('motivo')),
+                'display': (self.formatar_data_br(data_raw), m.get('tipo'), m.get('nome'), f"{qtd_fmt} {p.get('unidade', 'UN')}", f"R$ {valor_fmt}", m.get('usuario'), m.get('motivo')),
                 'tags': (m.get('tipo'),), 'sort_data': data_raw, 'sort_produto': m.get('nome', '').lower(), 'sort_qtd': qtd, 'sort_valor': v_total, 'sort_usuario': m.get('usuario', '').lower(), 'sort_tipo': m.get('tipo', ''), 'sort_motivo': m.get('motivo', '').lower()
             })
         if self.sort_dir != "original" and self.sort_col:
@@ -221,7 +227,7 @@ class AbaHistorico(ctk.CTkFrame):
         colors = {"SAIDA_VENDA": "#e6b0aa", "ENTRADA_FUNDO": "#abebc6", "ENTRADA_PRODUCAO": "#abebc6", "SAIDA_PRODUCAO": "#fad7a0", "TRANSFERENCIA": "#d7bde2", "PERDA_FUNDO": "#fad7a0"}
         for k, v in colors.items(): self.tree.tag_configure(k, background=v, foreground="black")
 
-    def formatar_numero_inteligente(self, v): return f"{int(v)}" if float(v).is_integer() else f"{v:.3f}".rstrip('0').rstrip('.')
+    # [REMOVIDO] def formatar_numero_inteligente(self, v): ... (Substituído por src.utils.formata_numeros_br)
     
     def formatar_data_br(self, s):
         try: return datetime.strptime(str(s).split('.')[0], "%Y-%m-%d %H:%M:%S").strftime("%d/%m/%Y %H:%M:%S")

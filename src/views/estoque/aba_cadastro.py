@@ -3,6 +3,8 @@ import customtkinter as ctk
 from tkinter import ttk, messagebox
 from src.utils.componentes_estilizados import CTkFloatingDropdown
 from src.utils.textos_ajuda import abrir_ajuda
+# Importação da nova função
+from src.utils.formata_numeros_br import formata_numeros_br
 
 class AbaCadastro(ctk.CTkFrame):
     def __init__(self, master, controller, callback_atualizar):
@@ -38,7 +40,7 @@ class AbaCadastro(ctk.CTkFrame):
         
         # Configuração de Colunas (Esquerda: Form, Direita: Lista)
         self.container.columnconfigure(0, weight=3) # Form
-        self.container.columnconfigure(1, weight=5) # Lista (Aumentei o peso pois tem mais colunas)
+        self.container.columnconfigure(1, weight=5) # Lista
         self.container.rowconfigure(0, weight=1)
 
         # === ESQUERDA: FORMULÁRIO ===
@@ -67,7 +69,6 @@ class AbaCadastro(ctk.CTkFrame):
         tree_container = ctk.CTkFrame(self.list_frame, fg_color="transparent")
         tree_container.pack(fill="both", expand=True)
 
-        # --- NOVAS COLUNAS DEFINIDAS AQUI ---
         cols = ("cod", "tipo", "nome", "custo", "venda", "min", "cat", "data")
         self.tree = ttk.Treeview(tree_container, columns=cols, show="headings", selectmode="browse")
         
@@ -81,15 +82,19 @@ class AbaCadastro(ctk.CTkFrame):
         self.tree.heading("cat", text="CATEGORIA")
         self.tree.heading("data", text="CADASTRO")
         
-        # Larguras
-        self.tree.column("cod", width=40, anchor="center")
+        # --- AJUSTE VISUAL (Centralização e Largura) ---
+        self.tree.column("cod", width=50, anchor="center")
         self.tree.column("tipo", width=60, anchor="center")
-        self.tree.column("nome", width=180)
-        self.tree.column("custo", width=70, anchor="e")
-        self.tree.column("venda", width=70, anchor="e")
-        self.tree.column("min", width=50, anchor="center")
-        self.tree.column("cat", width=90)
-        self.tree.column("data", width=80, anchor="center")
+        self.tree.column("nome", width=250)
+        self.tree.column("custo", width=100, anchor="center")
+        self.tree.column("venda", width=100, anchor="center")
+        self.tree.column("min", width=80, anchor="center") 
+        self.tree.column("cat", width=100, anchor="w")
+        self.tree.column("data", width=100, anchor="center")
+        
+        # --- ESTILO ZEBRADO (STRIPED ROWS) ---
+        self.tree.tag_configure('odd', background='#2b2b2b')
+        self.tree.tag_configure('even', background='#333333')
         
         # Scrollbars
         vsb = ctk.CTkScrollbar(tree_container, orientation="vertical", command=self.tree.yview)
@@ -100,12 +105,13 @@ class AbaCadastro(ctk.CTkFrame):
         hsb.pack(side="bottom", fill="x")
         self.tree.pack(side="left", fill="both", expand=True)
 
-        # Evento de Clique (Pergunta se quer editar)
+        # Evento de Clique
         self.tree.bind("<<TreeviewSelect>>", self.perguntar_edicao)
+        
+        # Ativa a ordenação por clique
+        self.configurar_ordenacao()
 
     def montar_formulario(self, parent):
-        # ... (Código do formulário igual ao anterior, apenas encapsulado aqui para organizar) ...
-        # Registrando validadores no Tkinter
         vcmd_int = (self.register(self.validar_inteiro), "%P")
         vcmd_dec = (self.register(self.validar_decimal), "%P")
         vcmd_lista = (self.register(self.validar_lista_numeros), "%P")
@@ -170,15 +176,12 @@ class AbaCadastro(ctk.CTkFrame):
         abrir_ajuda(self, "cadastro")
 
     def alternar_expansao(self):
-        """Alterna entre layout dividido e lista em tela cheia"""
         if not self.expandido:
-            # Expandir: Remove o Form e estica a Lista
             self.form_frame.grid_remove()
             self.list_frame.grid(row=0, column=0, columnspan=2, sticky="nsew")
             self.btn_expandir.configure(text="🗗 Restaurar Visão")
             self.expandido = True
         else:
-            # Restaurar: Volta o Form e a Lista para coluna 1
             self.list_frame.grid(row=0, column=1, columnspan=1, sticky="nsew")
             self.form_frame.grid(row=0, column=0, sticky="nsew")
             self.btn_expandir.configure(text="⤢ Expandir Lista")
@@ -224,33 +227,35 @@ class AbaCadastro(ctk.CTkFrame):
         self.produtos = produtos_dict
         for i in self.tree.get_children(): self.tree.delete(i)
         
-        for cod, p in produtos_dict.items():
+        # [REMOVIDO] A função interna formatar_br foi removida em favor da importação modular
+
+        for i, (cod, p) in enumerate(produtos_dict.items()):
             tipo_display = "📦 INS" if p.get('tipo') == "INSUMO" else "🍞 PROD"
-            # Preenche as novas colunas
-            # Se não tiver data salva, assume "-" ou cria uma lógica retroativa se preferir
             data_cad = p.get('data_cadastro', "-")
             
+            # Formatação usando a nova função modular
+            custo_fmt = formata_numeros_br(p.get('custo', 0), moeda=True)
+            preco_fmt = formata_numeros_br(p.get('preco', 0), moeda=True)
+            minimo_fmt = formata_numeros_br(p.get('estoque_minimo', 0), moeda=False)
+
             valores = (
                 cod, 
                 tipo_display, 
                 p['nome'], 
-                f"R$ {p.get('custo', 0):.2f}",
-                f"R$ {p.get('preco', 0):.2f}",
-                f"{p.get('estoque_minimo', 0):.3g}",
+                f"R$ {custo_fmt}",
+                f"R$ {preco_fmt}",
+                minimo_fmt,
                 p.get('categoria', ''),
                 data_cad
             )
-            self.tree.insert("", "end", values=valores)
+            
+            tag_linha = 'even' if i % 2 == 0 else 'odd'
+            self.tree.insert("", "end", values=valores, tags=(tag_linha,))
 
     def perguntar_edicao(self, event):
-        """Ao clicar na linha, pergunta se o usuário quer carregar os dados para edição"""
         sel = self.tree.selection()
         if not sel: return
         
-        # Bloqueia a seleção imediata para evitar loops se quiser
-        # Mas aqui, vamos apenas mostrar o popup
-        
-        # Pega o item clicado
         cod = self.tree.item(sel[0], "values")[0]
         p = self.produtos.get(cod)
         if not p: return
@@ -260,7 +265,6 @@ class AbaCadastro(ctk.CTkFrame):
         if resposta:
             self.carregar_edicao(cod)
         else:
-            # Se disser não, remove a seleção para não confundir
             self.tree.selection_remove(sel[0])
 
     def carregar_edicao(self, cod):
@@ -285,6 +289,27 @@ class AbaCadastro(ctk.CTkFrame):
             if p.get('controla_estoque', True): self.switch_controla.select()
             else: self.switch_controla.deselect()
             
-            # Se estiver expandido, volta ao normal para a pessoa ver o formulário
             if self.expandido:
                 self.alternar_expansao()
+
+    # --- LÓGICA DE ORDENAÇÃO ---
+    def configurar_ordenacao(self):
+        colunas = ["cod", "tipo", "nome", "custo", "venda", "min", "cat", "data"]
+        for col in colunas:
+            self.tree.heading(col, command=lambda c=col: self.ordenar_treeview(c, False))
+
+    def ordenar_treeview(self, col, reverse):
+        l = [(self.tree.set(k, col), k) for k in self.tree.get_children('')]
+        
+        try:
+            # Tenta ordenar como número, limpando R$ e convertendo formato BR (1.000,00) para float (1000.00)
+            l.sort(key=lambda t: float(t[0].replace('R$', '').replace('.', '').replace(',', '.').strip()), reverse=reverse)
+        except ValueError:
+            l.sort(reverse=reverse)
+
+        for index, (val, k) in enumerate(l):
+            self.tree.move(k, '', index)
+            tag_linha = 'even' if index % 2 == 0 else 'odd'
+            self.tree.item(k, tags=(tag_linha,))
+
+        self.tree.heading(col, command=lambda: self.ordenar_treeview(col, not reverse))
