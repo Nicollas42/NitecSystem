@@ -6,3 +6,12 @@ __pycache__/
 env/
 venv/
 .env
+
+# Pastas de compilação do PyInstaller
+build/
+dist/
+*.spec
+
+# Arquivos temporários do Python
+__pycache__/
+*.pyc
