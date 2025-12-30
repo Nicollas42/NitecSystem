@@ -3,16 +3,19 @@ import customtkinter as ctk
 from tkinter import ttk, messagebox
 from datetime import datetime, date
 from src.models import database
+# Importa a função auxiliar 'aplicar_mascara_data' e a NOVA função de formatação
 from src.utils.componentes_estilizados import CTkFloatingDropdown, CTkCalendar, aplicar_mascara_data
 from src.utils.formata_numeros_br import formata_numeros_br
 
 class AbaHistorico(ctk.CTkFrame):
     def __init__(self, master, produtos_ref, callback_atualizar):
+        print("DEBUG [Historico]: Inicializando aba...")
         super().__init__(master)
         self.produtos = produtos_ref 
         self.callback_atualizar = callback_atualizar
         self.popup_calendario = None 
         
+        # Atributos dos Dropdowns
         self.dropdown_prod = None    
         self.dropdown_user = None
         self.dropdown_tipo = None
@@ -201,8 +204,16 @@ class AbaHistorico(ctk.CTkFrame):
             if f_ini and dt_mov and dt_mov < f_ini: continue
             if f_fim and dt_mov and dt_mov > f_fim: continue
             if f_tipo != "TODOS" and f_tipo not in m.get('tipo', ''): continue
-            if f_prod and f_prod not in m.get('nome', '').lower(): continue
-            if f_user and f_user not in m.get('usuario', '').lower(): continue
+            
+            # --- PROTEÇÃO CONTRA DADOS NULOS/NONE ---
+            # Garante que sempre seja string, mesmo se vier None do banco
+            nome_mov = str(m.get('nome', '') or '')
+            user_mov = str(m.get('usuario', '') or '')
+            motivo_mov = str(m.get('motivo', '') or '')
+            # ----------------------------------------
+
+            if f_prod and f_prod not in nome_mov.lower(): continue
+            if f_user and f_user not in user_mov.lower(): continue
             
             cod = str(m.get('cod')); p = self.produtos.get(cod, {})
             qtd = float(m.get('qtd', 0))
@@ -218,9 +229,15 @@ class AbaHistorico(ctk.CTkFrame):
             tipo_mov = m.get('tipo', '')
 
             linhas.append({
-                'display': (self.formatar_data_br(data_raw), tipo_mov, m.get('nome'), f"{qtd_fmt} {p.get('unidade', 'UN')}", f"R$ {valor_fmt}", m.get('usuario'), m.get('motivo')),
+                'display': (self.formatar_data_br(data_raw), tipo_mov, nome_mov, f"{qtd_fmt} {p.get('unidade', 'UN')}", f"R$ {valor_fmt}", user_mov, motivo_mov),
                 'tags': (tipo_mov,), 
-                'sort_data': data_raw, 'sort_produto': m.get('nome', '').lower(), 'sort_qtd': qtd, 'sort_valor': v_total, 'sort_usuario': m.get('usuario', '').lower(), 'sort_tipo': tipo_mov, 'sort_motivo': m.get('motivo', '').lower()
+                'sort_data': data_raw, 
+                'sort_produto': nome_mov.lower(), 
+                'sort_qtd': qtd, 
+                'sort_valor': v_total, 
+                'sort_usuario': user_mov.lower(), 
+                'sort_tipo': tipo_mov, 
+                'sort_motivo': motivo_mov.lower()
             })
             
         if self.sort_dir != "original" and self.sort_col:
@@ -253,7 +270,8 @@ class AbaHistorico(ctk.CTkFrame):
     def carregar_lista_usuarios(self):
         try:
             movs = database.carregar_json(database.ARQ_MOVIMENTOS)
-            return sorted(list({m.get('usuario') for m in movs if m.get('usuario')})) or ["Admin"]
+            # Filtra Nones antes de adicionar ao set
+            return sorted(list({str(m.get('usuario') or 'Admin') for m in movs})) or ["Admin"]
         except: return ["Admin"]
 
     def atualizar(self):

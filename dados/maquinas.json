@@ -1,0 +1,20 @@
+{
+    "MQ01": {
+        "id": "MQ01",
+        "nome": "Forno Turbo",
+        "potencia_w": 500.0,
+        "gas_kg_h": 1.0
+    },
+    "MQ02": {
+        "id": "MQ02",
+        "nome": "Batedeira",
+        "potencia_w": 1000.0,
+        "gas_kg_h": 0.0
+    },
+    "MQ03": {
+        "id": "MQ03",
+        "nome": "Fritadeira",
+        "potencia_w": 4000.0,
+        "gas_kg_h": 0.0
+    }
+}
