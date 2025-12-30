@@ -1,17 +1,46 @@
-# .gitignore
+# =========================
+# Python
+# =========================
 __pycache__/
 *.py[cod]
-*$py.class
-.vscode/
-env/
-venv/
-.env
 
-# Pastas de compilação do PyInstaller
+# =========================
+# Virtual Env
+# =========================
+.venv/
+venv/
+env/
+
+# =========================
+# Build / PyInstaller
+# =========================
 build/
 dist/
 *.spec
 
-# Arquivos temporários do Python
-__pycache__/
-*.pyc
+# =========================
+# Runtime / Dev State
+# =========================
+dev_state.json
+dev.py
+
+# =========================
+# Dados dinâmicos (runtime)
+# =========================
+dados/
+src/dados/
+
+# =========================
+# Logs / temporários
+# =========================
+*.log
+.cache/
+.tmp/
+
+# =========================
+# IDEs / Sistema
+# =========================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
