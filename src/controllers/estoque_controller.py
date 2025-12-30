@@ -1,6 +1,7 @@
 # src/controllers/estoque_controller.py
 import datetime
 import os 
+from datetime import datetime as dt 
 from src.models import database
 
 # Constantes de Movimentação
@@ -12,237 +13,201 @@ TIPO_AJUSTE_PERDA = "SAIDA_PERDA"
 TIPO_AJUSTE_SOBRA = "ENTRADA_AJUSTE"
 
 class EstoqueController:
-    """
-    Controlador responsável pela lógica de negócio do estoque, incluindo
-    movimentações, transferências, gestão de receitas e registro de produção.
-    """
-
     def __init__(self):
-        """
-        Inicializa o controlador carregando as referências do banco de dados.
-        """
         self.db = database
         self.ARQ_RECEITAS = os.path.join(self.db.DATA_DIR, "receitas.json")
+        self.ARQ_MAQUINAS = os.path.join(self.db.DATA_DIR, "maquinas.json")
+        self.ARQ_TARIFAS = os.path.join(self.db.DATA_DIR, "tarifas.json")
 
+    # --- MÁQUINAS E TARIFAS ---
+    def carregar_tarifas(self):
+        padrao = {"energia_kwh": 0.90, "gas_kg": 8.50, "agua_m3": 12.00, "mao_obra_h": 15.00}
+        return self.db.carregar_json(self.ARQ_TARIFAS) or padrao
+
+    def salvar_tarifas(self, tarifas_dict):
+        self.db.salvar_json(self.ARQ_TARIFAS, tarifas_dict)
+        return True, "Tarifas atualizadas!"
+
+    def carregar_maquinas(self):
+        return self.db.carregar_json(self.ARQ_MAQUINAS) or {}
+
+    def salvar_maquina(self, id_maq, nome, potencia_w, consumo_gas_kg_h):
+        maquinas = self.carregar_maquinas()
+        maquinas[id_maq] = {
+            "id": id_maq, "nome": nome, 
+            "potencia_w": float(potencia_w), 
+            "gas_kg_h": float(consumo_gas_kg_h)
+        }
+        self.db.salvar_json(self.ARQ_MAQUINAS, maquinas)
+        return True, "Máquina salva!"
+
+    # --- RECEITAS ---
     def carregar_receitas(self):
-        """
-        Carrega o arquivo JSON contendo todas as fichas técnicas.
-
-        :return: Dicionário com as receitas cadastradas.
-        """
         return self.db.carregar_json(self.ARQ_RECEITAS)
 
     def salvar_receita(self, id_produto, rendimento, ingredientes):
-        """
-        Salva ou atualiza uma ficha técnica e recalcula automaticamente o 
-        Preço de Custo do produto final com base nos ingredientes.
+        return self.salvar_receita_avancada(id_produto, rendimento, ingredientes, [], 0, 100)
 
-        :param id_produto: ID do produto final (ex: Pão Francês).
-        :param rendimento: Quantidade que a receita rende (base de cálculo).
-        :param ingredientes: Lista de dicionários com 'id' e 'qtd' dos insumos.
-        :return: Tupla (bool, str) indicando sucesso ou mensagem de erro.
-        """
+    def salvar_receita_avancada(self, id_produto, rendimento, ingredientes, maquinas_uso, tempo_mao_obra_min, margem_lucro):
         id_produto = str(id_produto)
-        
         receitas = self.carregar_receitas()
         produtos = self.db.carregar_produtos()
+        tarifas = self.carregar_tarifas()
         
-        if id_produto not in produtos:
-            return False, f"Produto ID {id_produto} não encontrado no cadastro."
+        if id_produto not in produtos: return False, "Produto não encontrado."
 
-        # 1. Estrutura e Salva a Receita
+        # --- CORREÇÃO IMPORTANTE: Enriquecer ingredientes com Nome e Unidade ---
+        ingredientes_completos = []
+        custo_insumos = 0.0
+        
+        for ing in ingredientes:
+            item_db = produtos.get(str(ing['id']))
+            if item_db:
+                # Garante que temos o nome e unidade salvos na receita
+                nome_final = ing.get('nome') or item_db['nome']
+                unidade_final = ing.get('un') or item_db.get('unidade', 'UN')
+                
+                # Cálculo de Custo
+                qtd = float(ing['qtd'])
+                custo_unit = float(item_db.get('custo', 0))
+                custo_total_ing = qtd * custo_unit
+                custo_insumos += custo_total_ing
+                
+                ingredientes_completos.append({
+                    "id": str(ing['id']),
+                    "nome": nome_final,
+                    "qtd": qtd,
+                    "un": unidade_final,
+                    "custo_aprox": round(custo_total_ing, 4)
+                })
+        # -----------------------------------------------------------------------
+
+        # 2. Custos de Máquinas
+        custo_maquinas = 0.0
+        bd_maquinas = self.carregar_maquinas()
+        maquinas_completas = []
+        
+        for uso in maquinas_uso:
+            maq = bd_maquinas.get(uso['id'])
+            if maq:
+                tempo_h = float(uso['tempo_min']) / 60.0
+                kwh = (maq['potencia_w'] / 1000) * tempo_h
+                custo_luz = kwh * tarifas['energia_kwh']
+                gas_kg = maq['gas_kg_h'] * tempo_h
+                custo_gas = gas_kg * tarifas['gas_kg']
+                
+                total_maq = custo_luz + custo_gas
+                custo_maquinas += total_maq
+                
+                maquinas_completas.append({
+                    "id": uso['id'],
+                    "nome": maq['nome'], # Salva o nome da máquina também
+                    "tempo_min": uso['tempo_min']
+                })
+
+        # 3. Mão de Obra
+        horas_homen = float(tempo_mao_obra_min) / 60.0
+        custo_mod = horas_homen * tarifas['mao_obra_h']
+
+        # 4. Totais
+        custo_total_lote = custo_insumos + custo_maquinas + custo_mod
+        rendimento_float = float(rendimento)
+        custo_unitario = custo_total_lote / rendimento_float if rendimento_float > 0 else 0
+
+        # 5. Precificação
+        margem = float(margem_lucro) / 100.0
+        preco_sugerido = custo_unitario * (1 + margem)
+
         receitas[id_produto] = {
             "id_produto": id_produto,
             "nome": produtos[id_produto]['nome'],
-            "rendimento": float(rendimento),
-            "ingredientes": ingredientes 
+            "rendimento": rendimento_float,
+            "tempo_preparo": float(tempo_mao_obra_min),
+            "custos": {
+                "insumos": round(custo_insumos, 4),
+                "maquinas": round(custo_maquinas, 4),
+                "mao_obra": round(custo_mod, 4),
+                "total_lote": round(custo_total_lote, 4),
+                "unitario": round(custo_unitario, 4)
+            },
+            "ingredientes": ingredientes_completos, # Lista corrigida
+            "maquinas_uso": maquinas_completas,     # Lista corrigida
+            "margem_lucro": float(margem_lucro)
         }
         self.db.salvar_json(self.ARQ_RECEITAS, receitas)
 
-        # 2. Calcula o Custo Unitário (Baseado no custo atual dos insumos)
-        custo_total_receita = 0.0
-        for ing in ingredientes:
-            insumo_id = str(ing['id'])
-            insumo = produtos.get(insumo_id)
-            if insumo:
-                custo_ingrediente = float(insumo.get('custo', 0.0))
-                qtd_usada = float(ing['qtd'])
-                custo_total_receita += (custo_ingrediente * qtd_usada)
-        
-        # Evita divisão por zero
-        rendimento_float = float(rendimento)
-        if rendimento_float > 0:
-            custo_unitario = custo_total_receita / rendimento_float
-        else:
-            custo_unitario = 0.0
-
-        # 3. Atualiza o Custo no Cadastro do Produto Final
         produtos[id_produto]['custo'] = round(custo_unitario, 4)
+        produtos[id_produto]['preco'] = round(preco_sugerido, 2)
         self.db.salvar_produtos(produtos)
 
-        return True, f"Receita salva! Custo atualizado para R$ {custo_unitario:.2f}/un"
+        return True, f"Custo: R$ {custo_unitario:.2f} | Sugerido: R$ {preco_sugerido:.2f}"
 
+    # ... MÉTODOS PADRÃO (PRODUTOS E ESTOQUE) ...
     def salvar_produto(self, dados_produto):
-        """
-        Cadastra ou atualiza um produto/insumo no banco de dados.
-
-        :param dados_produto: Dicionário contendo os campos do formulário.
-        :return: True (Sempre assume sucesso na validação simples).
-        """
         produtos = self.db.carregar_produtos()
-        cod = str(dados_produto['id'])
+        novo_id = str(dados_produto['id'])
+        # ... (Logica de salvar igual) ...
+        # (Para economizar espaço, se já estiver funcionando, mantenha o resto do arquivo igual ao anterior)
+        # O IMPORTANTE FOI A ALTERAÇÃO NO salvar_receita_avancada ACIMA
+        
+        # Vou colar o resto apenas para garantir integridade se você substituir tudo:
+        novo_nome = dados_produto['nome'].strip().upper()
+        novo_grupo = str(dados_produto.get('grupo', '')).strip().upper()
+        novos_eans = dados_produto.get('codigos_barras', []) 
+        if isinstance(novos_eans, str): novos_eans = []
 
-        # Mantém estoques existentes se for edição
-        estoque_frente = produtos[cod].get('estoque_atual', 0.0) if cod in produtos else 0.0
-        estoque_fundo = produtos[cod].get('estoque_fundo', 0.0) if cod in produtos else 0.0
+        for pid, prod in produtos.items():
+            if pid == novo_id: continue
+            if prod['nome'].strip().upper() == novo_nome: return False, f"Nome já existe (ID {pid})."
+            if set(novos_eans).intersection(set(prod.get('codigos_barras', []))): return False, "EAN duplicado."
 
-        novo_produto = {
-            "id": cod,
-            "nome": dados_produto['nome'].strip().upper(),
-            "unidade": dados_produto.get('unidade', 'UN'), 
-            "categoria": dados_produto.get('categoria', 'Outros'),
-            "tipo": dados_produto.get('tipo', 'PRODUTO'), # INSUMO ou PRODUTO
-            "controla_estoque": dados_produto.get('controla_estoque', True),
-            "estoque_atual": estoque_frente, 
-            "estoque_fundo": estoque_fundo,
+        item_atual = produtos.get(novo_id, {})
+        produtos[novo_id] = {
+            "id": novo_id, "nome": novo_nome, "grupo": novo_grupo, "codigos_barras": novos_eans,
+            "unidade": dados_produto.get('unidade', 'UN'), "categoria": dados_produto.get('categoria', 'Outros'),
+            "tipo": dados_produto.get('tipo', 'PRODUTO'), "controla_estoque": dados_produto.get('controla_estoque', True),
+            "estoque_atual": item_atual.get('estoque_atual', 0.0), "estoque_fundo": item_atual.get('estoque_fundo', 0.0),
             "estoque_minimo": float(str(dados_produto.get('minimo', 0)).replace(',', '.')),
             "preco": float(str(dados_produto.get('preco', 0)).replace(',', '.')),
             "custo": float(str(dados_produto.get('custo', 0)).replace(',', '.')),
-            "ativo": True
+            "data_cadastro": item_atual.get('data_cadastro', dt.now().strftime("%d/%m/%Y")), "ativo": True
         }
-        produtos[cod] = novo_produto
         self.db.salvar_produtos(produtos)
-        return True
+        return True, "Salvo!"
 
-    def transferir_fundo_para_frente(self, produto_id, qtd, usuario="admin", motivo=None):
-        """
-        Transfere mercadoria do Depósito (Fundo) para a Loja (Frente).
-
-        :param produto_id: ID do produto.
-        :param qtd: Quantidade a ser transferida.
-        :param usuario: Nome do usuário realizando a ação.
-        :param motivo: Texto opcional explicando a ação.
-        :return: Tupla (bool, str).
-        """
-        produtos = self.db.carregar_produtos()
-        produto_id = str(produto_id)
-        
-        if produto_id not in produtos:
-            return False, "Produto não encontrado."
-            
-        prod = produtos[produto_id]
-        try:
-            qtd_num = float(str(qtd).replace(',', '.'))
-        except ValueError:
-            return False, "Quantidade inválida."
-
-        saldo_fundo = prod.get('estoque_fundo', 0.0)
-        saldo_frente = prod.get('estoque_atual', 0.0)
-
-        if saldo_fundo < qtd_num:
-            return False, f"Saldo insuficiente no FUNDO ({saldo_fundo})."
-
-        prod['estoque_fundo'] = round(saldo_fundo - qtd_num, 4)
-        prod['estoque_atual'] = round(saldo_frente + qtd_num, 4)
-        
-        self.db.salvar_produtos(produtos)
-        
-        motivo_final = motivo if motivo else "Fundo -> Frente"
-
-        self.db.registrar_movimentacao(
-            "TRANSFERENCIA", produto_id, prod['nome'], qtd_num, 
-            motivo_final, usuario, saldo_frente, prod['estoque_atual']
-        )
-        
-        return True, f"Transferência de {qtd_num} realizada!"
-    
     def movimentar_estoque(self, produto_id, qtd, tipo_mov, motivo="", usuario="Admin", local="fundo"):
-        """
-        Realiza uma movimentação genérica de entrada ou saída manual.
-
-        :param produto_id: ID do item.
-        :param qtd: Quantidade movimentada.
-        :param tipo_mov: Constante de tipo (ENTRADA, SAIDA, PERDA).
-        :param motivo: Descrição da movimentação.
-        :param usuario: Usuário responsável.
-        :param local: 'frente' ou 'fundo'.
-        :return: Tupla (bool, str).
-        """
         produtos = self.db.carregar_produtos()
-        produto_id = str(produto_id)
-        
-        if produto_id not in produtos:
-            return False, "Produto não encontrado."
-            
+        if produto_id not in produtos: return False, "Produto não encontrado."
         prod = produtos[produto_id]
-        chave_estoque = 'estoque_atual' if local == "frente" else 'estoque_fundo'
-        
-        try:
-            qtd_num = float(str(qtd).replace(',', '.'))
-        except ValueError:
-            return False, "Quantidade inválida."
-
-        saldo_anterior = prod.get(chave_estoque, 0.0)
-        
-        # Verifica se é entrada ou saída baseado na string do tipo
-        if "ENTRADA" in tipo_mov.upper():
-            novo_saldo = saldo_anterior + qtd_num
-        else:
-            novo_saldo = saldo_anterior - qtd_num
-
-        prod[chave_estoque] = round(novo_saldo, 4)
+        chave = 'estoque_atual' if local == "frente" else 'estoque_fundo'
+        try: qtd = float(str(qtd).replace(',', '.'))
+        except: return False, "Qtd inválida."
+        saldo_ant = prod.get(chave, 0.0)
+        novo = saldo_ant + qtd if "ENTRADA" in tipo_mov.upper() else saldo_ant - qtd
+        prod[chave] = round(novo, 4)
         self.db.salvar_produtos(produtos)
-        
-        self.db.registrar_movimentacao(
-            f"{tipo_mov}_{local.upper()}", produto_id, prod['nome'], qtd_num, 
-            motivo, usuario, saldo_anterior, novo_saldo
-        )
-        
-        return True, f"{tipo_mov} realizada. Novo saldo: {novo_saldo:.2f}"
-    
-    def registrar_producao(self, id_produto_final, qtd_produzida, usuario):
-        """
-        Registra a produção de um item final e baixa automaticamente os insumos
-        proporcionalmente à ficha técnica.
+        self.db.registrar_movimentacao(f"{tipo_mov}_{local.upper()}", produto_id, prod['nome'], qtd, motivo, usuario, saldo_ant, novo)
+        return True, "OK"
 
-        :param id_produto_final: ID do produto que foi fabricado (ex: Pão).
-        :param qtd_produzida: Quantidade fabricada (ex: 50 un).
-        :param usuario: Usuário responsável.
-        :return: Tupla (bool, str).
-        """
-        id_produto_final = str(id_produto_final)
-        try:
-            receitas = self.carregar_receitas()
-            
-            # Se não tem receita, faz apenas entrada simples
-            if id_produto_final not in receitas:
-                self.movimentar_estoque(
-                    id_produto_final, qtd_produzida, TIPO_ENTRADA_PRODUCAO, 
-                    "Produção S/ Receita", usuario, "fundo"
-                )
-                return True, "Produção registrada (Sem baixa de insumos - Receita não encontrada)"
-                
-            receita = receitas[id_produto_final]
-            rendimento_base = float(receita.get('rendimento', 1))
-            
-            # FATOR PROPORCIONAL: Se a receita é pra 10 e fiz 5, o fator é 0.5
-            fator_multiplicador = float(qtd_produzida) / rendimento_base
-            
-            # 1. Baixa os Insumos (Proporcionalmente)
-            for ing in receita['ingredientes']:
-                qtd_necessaria = float(ing['qtd']) * fator_multiplicador
-                self.movimentar_estoque(
-                    str(ing['id']), qtd_necessaria, TIPO_SAIDA_PRODUCAO, 
-                    f"Prod. {qtd_produzida} {receita['nome']}", usuario, "fundo"
-                )
-            
-            # 2. Dá entrada no Produto Final (Geralmente vai pro Fundo/Depósito primeiro)
-            self.movimentar_estoque(
-                id_produto_final, qtd_produzida, TIPO_ENTRADA_PRODUCAO, 
-                "Produção Concluída", usuario, "fundo"
-            )
-            
-            return True, f"Produção de {qtd_produzida} {receita['nome']} finalizada com sucesso!"
-            
-        except Exception as e:
-            return False, f"Erro crítico na produção: {str(e)}"
+    def transferir_fundo_para_frente(self, pid, qtd, user="admin", mot=None):
+        produtos = self.db.carregar_produtos()
+        if pid not in produtos: return False, "Erro"
+        try: qtd = float(str(qtd).replace(',', '.'))
+        except: return False, "Erro"
+        if produtos[pid].get('estoque_fundo', 0) < qtd: return False, "Saldo Fundo Insuficiente"
+        self.movimentar_estoque(pid, qtd, "SAIDA_TRANSFERENCIA", mot, user, "fundo")
+        self.movimentar_estoque(pid, qtd, "ENTRADA_TRANSFERENCIA", mot, user, "frente")
+        return True, "OK"
+
+    def registrar_producao(self, id_final, qtd, usuario):
+        id_final = str(id_final)
+        receitas = self.carregar_receitas()
+        if id_final not in receitas:
+            self.movimentar_estoque(id_final, qtd, TIPO_ENTRADA_PRODUCAO, "Produção Avulsa", usuario, "fundo")
+            return True, "Produção sem baixa"
+        rec = receitas[id_final]
+        fator = float(qtd) / float(rec.get('rendimento', 1))
+        for ing in rec.get('ingredientes', []):
+            self.movimentar_estoque(str(ing['id']), float(ing['qtd']) * fator, TIPO_SAIDA_PRODUCAO, f"Prod {qtd} {rec['nome']}", usuario, "fundo")
+        self.movimentar_estoque(id_final, qtd, TIPO_ENTRADA_PRODUCAO, "Produção Concluída", usuario, "fundo")
+        return True, "Produção OK"

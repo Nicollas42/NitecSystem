@@ -2,6 +2,7 @@
 import customtkinter as ctk
 from tkinter import ttk, messagebox
 from src.utils.textos_ajuda import abrir_ajuda
+from src.utils.formata_numeros_br import formata_numeros_br
 
 class AbaProducao(ctk.CTkFrame):
     def __init__(self, master, controller, produtos_ref, callback_atualizar):
@@ -76,16 +77,45 @@ class AbaProducao(ctk.CTkFrame):
             unidade_prod = self.produtos.get(id_prod, {}).get('unidade', 'UN')
             self.id_selecionado = id_prod
             self.lbl_titulo.configure(text=receita['nome'])
-            self.lbl_subtitulo.configure(text=f"Receita Base para: {receita['rendimento']} {unidade_prod}")
+            
+            # Formatação do rendimento da receita
+            rendimento_fmt = formata_numeros_br(receita.get('rendimento', 1), moeda=False)
+            
+            self.lbl_subtitulo.configure(text=f"Receita Base para: {rendimento_fmt} {unidade_prod}")
             self.lbl_unidade_input.configure(text=unidade_prod)
             self.btn_produzir.configure(state="normal")
-            self.renderizar_ingredientes(receita['ingredientes'])
+            self.renderizar_ingredientes(receita.get('ingredientes', []))
 
     def renderizar_ingredientes(self, ingredientes):
         for w in self.scroll_ingredientes.winfo_children(): w.destroy()
+        
+        if not ingredientes:
+            ctk.CTkLabel(self.scroll_ingredientes, text="Nenhum ingrediente cadastrado.", text_color="gray").pack()
+            return
+
         for ing in ingredientes:
-            un = self.produtos.get(str(ing['id']), {}).get('unidade', 'UN')
-            ctk.CTkLabel(self.scroll_ingredientes, text=f"• {ing['qtd']} {un} - {ing['nome']}", anchor="w").pack(fill="x", padx=5)
+            id_ing = str(ing.get('id'))
+            
+            # 1. Tenta buscar dados completos no banco de produtos
+            produto_db = self.produtos.get(id_ing, {})
+            
+            # 2. Define a unidade (Prioridade: Banco -> Receita -> Padrão)
+            un = produto_db.get('unidade') or ing.get('un') or 'UN'
+            
+            # 3. Define o nome (Prioridade: Receita -> Banco -> Erro)
+            # Isso corrige o "Nome Indisponível"
+            nome_ing = ing.get('nome')
+            if not nome_ing:
+                nome_ing = produto_db.get('nome', f"Item {id_ing} (Não encontrado)")
+
+            # Formatação da quantidade
+            try:
+                qtd_val = float(ing.get('qtd', 0))
+                qtd_ing_fmt = formata_numeros_br(qtd_val, moeda=False)
+            except:
+                qtd_ing_fmt = "0"
+            
+            ctk.CTkLabel(self.scroll_ingredientes, text=f"• {qtd_ing_fmt} {un} - {nome_ing}", anchor="w").pack(fill="x", padx=5)
 
     def confirmar_producao(self):
         qtd = self.ent_qtd.get().replace(",", ".")
@@ -96,3 +126,5 @@ class AbaProducao(ctk.CTkFrame):
             ok, resp = self.controller.registrar_producao(self.id_selecionado, qtd, "Admin")
             if ok:
                 messagebox.showinfo("Sucesso", resp); self.callback_atualizar()
+            else:
+                messagebox.showerror("Erro", resp)

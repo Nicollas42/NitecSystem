@@ -1,8 +1,8 @@
-# src/views/estoque/aba_receitas.py
 import customtkinter as ctk
 from tkinter import ttk, messagebox
-from src.utils.componentes_estilizados import CTkFloatingDropdown
-from src.utils.textos_ajuda import abrir_ajuda
+from .sub_receitas.tab_ingredientes import TabIngredientes
+from .sub_receitas.tab_maquinas import TabMaquinas
+from .sub_receitas.tab_financeiro import TabFinanceiro
 
 class AbaReceitas(ctk.CTkFrame):
     def __init__(self, master, controller, produtos_ref, callback_atualizar):
@@ -10,102 +10,166 @@ class AbaReceitas(ctk.CTkFrame):
         self.controller = controller
         self.produtos = produtos_ref
         self.callback_atualizar = callback_atualizar
-        self.ingredientes_temp = [] 
-        self.id_produto_atual = None
-        self.lista_insumos_nomes = []
         
+        self.id_produto_atual = None
         self.montar_layout()
 
     def montar_layout(self):
-        self.columnconfigure(0, weight=1); self.columnconfigure(1, weight=2); self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1); self.columnconfigure(1, weight=3)
+        self.rowconfigure(0, weight=1)
 
         # ESQUERDA: LISTA
         frame_esq = ctk.CTkFrame(self, fg_color="#2b2b2b")
         frame_esq.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
-        header_esq = ctk.CTkFrame(frame_esq, fg_color="transparent")
-        header_esq.pack(fill="x", pady=10)
-        ctk.CTkLabel(header_esq, text="1. Escolha o Produto Final", font=("Arial", 14, "bold"), text_color="#2CC985").pack(side="left", padx=(10, 5))
-        ctk.CTkButton(header_esq, text="?", width=25, height=25, fg_color="#2980B9", command=self.mostrar_ajuda).pack(side="left")
+        ctk.CTkLabel(frame_esq, text="Selecione o Produto", font=("Arial", 14, "bold"), text_color="#2CC985").pack(pady=10)
         
         self.lista_produtos = ttk.Treeview(frame_esq, columns=("nome",), show="headings")
-        self.lista_produtos.heading("nome", text="Produtos (Venda)")
-        self.lista_produtos.pack(fill="both", expand=True, padx=10, pady=10)
-        self.lista_produtos.bind("<<TreeviewSelect>>", self.carregar_receita_existente)
+        self.lista_produtos.heading("nome", text="Produtos (Internos)")
+        self.lista_produtos.pack(fill="both", expand=True, padx=5, pady=5)
+        self.lista_produtos.bind("<<TreeviewSelect>>", self.carregar_produto)
 
-        # DIREITA: EDITOR
+        # DIREITA: ABAS
         frame_dir = ctk.CTkFrame(self)
         frame_dir.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
-        f_head = ctk.CTkFrame(frame_dir, fg_color="transparent")
-        f_head.pack(fill="x", padx=10, pady=10)
-        self.lbl_produto_selecionado = ctk.CTkLabel(f_head, text="Nenhum Produto Selecionado", font=("Arial", 18, "bold"))
-        self.lbl_produto_selecionado.pack(anchor="w")
+        
+        self.lbl_selecao = ctk.CTkLabel(frame_dir, text="Nenhum Produto Selecionado", font=("Arial", 18, "bold"))
+        self.lbl_selecao.pack(pady=10, anchor="w", padx=20)
 
-        f_rend = ctk.CTkFrame(f_head, fg_color="transparent")
-        f_rend.pack(fill="x", pady=5)
-        ctk.CTkLabel(f_rend, text="Rendimento desta Receita:").pack(side="left")
-        self.ent_rendimento = ctk.CTkEntry(f_rend, width=80); self.ent_rendimento.pack(side="left", padx=10)
-        self.lbl_unidade_rend = ctk.CTkLabel(f_rend, text="UN"); self.lbl_unidade_rend.pack(side="left")
+        self.tabs = ctk.CTkTabview(frame_dir)
+        self.tabs.pack(fill="both", expand=True, padx=10, pady=5)
+        
+        # Instancia Módulos
+        self.modulo_ing = TabIngredientes(self.tabs.add("🍎 Ingredientes"), self.produtos, self.recalcular_custos_tempo_real)
+        self.modulo_ing.pack(fill="both", expand=True)
+        
+        self.modulo_maq = TabMaquinas(self.tabs.add("⚙️ Máquinas"), self.controller)
+        self.modulo_maq.pack(fill="both", expand=True)
+        
+        self.modulo_fin = TabFinanceiro(self.tabs.add("💰 Precificação"), self.salvar_tudo, self.ao_alterar_financeiro)
+        self.modulo_fin.pack(fill="both", expand=True)
 
-        f_add = ctk.CTkFrame(frame_dir, border_width=1, border_color="#444")
-        f_add.pack(fill="x", padx=10, pady=10)
-        self.ent_insumo = ctk.CTkEntry(f_add, width=250, placeholder_text="Digite o insumo...")
-        self.ent_insumo.pack(side="left", padx=10, pady=10)
-        self.dropdown_insumos = CTkFloatingDropdown(self.ent_insumo, [], width=350, command=self.verificar_unidade)
-        self.ent_qtd_ing = ctk.CTkEntry(f_add, width=80); self.ent_qtd_ing.pack(side="left", padx=5)
-        self.lbl_un_ing = ctk.CTkLabel(f_add, text="UN"); self.lbl_un_ing.pack(side="left", padx=5)
-        ctk.CTkButton(f_add, text="Adicionar (+)", fg_color="#27AE60", command=self.adicionar_ingrediente).pack(side="left", padx=10)
-
-        f_list_container = ctk.CTkFrame(frame_dir, fg_color="transparent")
-        f_list_container.pack(fill="both", expand=True, padx=10)
-        self.scroll_ing = ctk.CTkScrollableFrame(f_list_container, fg_color="transparent")
-        self.scroll_ing.pack(fill="both", expand=True)
-
-        f_footer = ctk.CTkFrame(frame_dir, height=60, fg_color="#333")
-        f_footer.pack(fill="x", side="bottom")
-        self.lbl_custo_total = ctk.CTkLabel(f_footer, text="Custo Total: R$ 0.00", font=("Arial", 14, "bold"))
-        self.lbl_custo_total.pack(side="left", padx=20, pady=15)
-        ctk.CTkButton(f_footer, text="💾 SALVAR", fg_color="#2980B9", command=self.salvar_receita).pack(side="right", padx=10)
-
-    def mostrar_ajuda(self):
-        abrir_ajuda(self, "receitas")
+    def ao_alterar_financeiro(self, event=None):
+        self.recalcular_custos_tempo_real()
 
     def atualizar(self):
+        # Atualiza lista lateral e combos
         self.lista_produtos.delete(*self.lista_produtos.get_children())
-        self.lista_insumos_nomes = [p['nome'] for p in self.produtos.values() if p.get('tipo') == 'INSUMO']
+        insumos = []
+        
         for cod, p in self.produtos.items():
-            if p.get('tipo') == 'PRODUTO': self.lista_produtos.insert("", "end", values=(p['nome'],), tags=(cod,))
-        self.dropdown_insumos.atualizar_dados(self.lista_insumos_nomes)
+            tipo = p.get('tipo', 'PRODUTO')
+            if tipo == 'INTERNO':
+                # O ID (cod) é guardado na TAG da linha
+                self.lista_produtos.insert("", "end", values=(p['nome'],), tags=(str(cod),))
+            
+            if tipo in ['INSUMO', 'PRODUTO']:
+                insumos.append(p['nome'])
+        
+        self.modulo_ing.atualizar_dropdown(sorted(insumos))
+        self.modulo_maq.carregar_combo() # Garante que as máquinas apareçam
 
-    def verificar_unidade(self, item=None):
-        nome = item if item else self.ent_insumo.get()
-        for p in self.produtos.values():
-            if p['nome'] == nome: self.lbl_un_ing.configure(text=p.get('unidade', 'UN')); return
+    def carregar_produto(self, event):
+        try:
+            sel = self.lista_produtos.selection()
+            if not sel: return
+            
+            # --- CORREÇÃO DO ERRO KEYERROR ---
+            # Pegamos a tag e forçamos converter para STRING
+            tag_valor = self.lista_produtos.item(sel[0])['tags'][0]
+            cod = str(tag_valor) 
+            # ---------------------------------
 
-    def carregar_receita_existente(self, event):
-        sel = self.lista_produtos.selection()
-        if not sel: return
-        cod_prod = str(self.lista_produtos.item(sel[0])['tags'][0])
-        self.id_produto_atual = cod_prod
-        self.lbl_produto_selecionado.configure(text=f"Editando: {self.produtos[cod_prod]['nome']}")
-        self.renderizar_ingredientes()
+            self.id_produto_atual = cod
+            
+            # Verifica se o produto ainda existe no dicionário (segurança)
+            if cod not in self.produtos:
+                print(f"ERRO: Produto ID {cod} não encontrado no dicionário self.produtos")
+                return
 
-    def adicionar_ingrediente(self):
-        nome = self.ent_insumo.get()
-        id_insumo = next((k for k, v in self.produtos.items() if v['nome'] == nome), None)
-        if id_insumo:
-            self.ingredientes_temp.append({"id": id_insumo, "nome": nome, "qtd": self.ent_qtd_ing.get()})
-            self.renderizar_ingredientes()
+            nome_prod = self.produtos[cod]['nome']
+            self.lbl_selecao.configure(text=f"Editando: {nome_prod}")
+            
+            # Busca receita no banco
+            receitas_db = self.controller.carregar_receitas()
+            rec = receitas_db.get(cod, {})
+            
+            # Distribui dados para as sub-abas
+            self.modulo_ing.atualizar_dados(rec.get('ingredientes', []))
+            self.modulo_maq.atualizar_dados(rec.get('maquinas_uso', []), rec.get('tempo_preparo', 60))
+            self.modulo_fin.set_valores(rec.get('rendimento', 1), rec.get('margem_lucro', 100))
+            
+            self.recalcular_custos_tempo_real()
+            
+        except Exception as e:
+            print(f"ERRO CRÍTICO ao carregar produto: {e}")
+            import traceback
+            traceback.print_exc()
 
-    def renderizar_ingredientes(self):
-        for w in self.scroll_ing.winfo_children(): w.destroy()
-        for i, ing in enumerate(self.ingredientes_temp):
-            ctk.CTkLabel(self.scroll_ing, text=ing['nome']).grid(row=i, column=0, sticky="w")
-            ctk.CTkButton(self.scroll_ing, text="🗑️", width=30, command=lambda idx=i: self.remover(idx)).grid(row=i, column=1)
+    def recalcular_custos_tempo_real(self):
+        if not self.id_produto_atual: return
 
-    def remover(self, idx):
-        del self.ingredientes_temp[idx]; self.renderizar_ingredientes()
+        # Coleta dados das abas
+        ingredientes = self.modulo_ing.ingredientes_lista
+        maquinas = self.modulo_maq.maquinas_lista
+        try: tempo_homem = float(self.modulo_maq.get_tempo_humano())
+        except: tempo_homem = 0.0
+        
+        tarifas = self.controller.carregar_tarifas()
+        bd_maquinas = self.controller.carregar_maquinas()
 
-    def salvar_receita(self):
-        if self.id_produto_atual:
-            self.controller.salvar_receita(self.id_produto_atual, self.ent_rendimento.get(), self.ingredientes_temp)
-            messagebox.showinfo("Sucesso", "Ficha salva!"); self.callback_atualizar()
+        # 1. Custo Matéria Prima
+        custo_insumos = sum(float(i.get('custo_aprox', 0)) for i in ingredientes)
+
+        # 2. Custo Máquinas (Energia + Gás)
+        custo_maquinas = 0.0
+        for uso in maquinas:
+            maq = bd_maquinas.get(uso['id'])
+            if maq:
+                tempo_h = float(uso['tempo_min']) / 60.0
+                kwh = (maq['potencia_w'] / 1000) * tempo_h
+                custo_luz = kwh * tarifas['energia_kwh']
+                gas_kg = maq['gas_kg_h'] * tempo_h
+                custo_gas = gas_kg * tarifas['gas_kg']
+                custo_maquinas += (custo_luz + custo_gas)
+
+        # 3. Custo Mão de Obra
+        custo_mod = (tempo_homem / 60.0) * tarifas['mao_obra_h']
+        
+        custo_total = custo_insumos + custo_maquinas + custo_mod
+        
+        # 4. Totais
+        try: rendimento = self.modulo_fin.get_rendimento()
+        except: rendimento = 1
+        
+        custo_unit = custo_total / rendimento if rendimento > 0 else 0
+        
+        try: margem = self.modulo_fin.get_margem() / 100.0
+        except: margem = 0
+        
+        preco_sug = custo_unit * (1 + margem)
+
+        # Envia para tela
+        self.modulo_fin.atualizar_resumo(
+            custo_insumos,
+            custo_maquinas + custo_mod,
+            custo_total,
+            custo_unit,
+            preco_sug
+        )
+
+    def salvar_tudo(self):
+        if not self.id_produto_atual: return
+        
+        ok, msg = self.controller.salvar_receita_avancada(
+            self.id_produto_atual,
+            self.modulo_fin.get_rendimento(),
+            self.modulo_ing.ingredientes_lista,
+            self.modulo_maq.maquinas_lista,
+            self.modulo_maq.get_tempo_humano(),
+            self.modulo_fin.get_margem()
+        )
+        if ok:
+            messagebox.showinfo("Sucesso", msg)
+            self.callback_atualizar()
+        else:
+            messagebox.showerror("Erro", msg)

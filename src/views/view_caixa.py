@@ -78,11 +78,9 @@ class CaixaFrame(ctk.CTkFrame):
         ctk.CTkLabel(f_input, text="CÓDIGO (F1)", font=("Arial", 12)).pack(anchor="w", padx=10)
         
         # --- CAMPO DE CÓDIGO COM VALIDAÇÃO (SOMENTE NÚMEROS) ---
-        # Registra a função de validação no sistema do Tkinter
         vcmd = (self.register(self.validar_entrada), "%P")
         
         self.entry_cod = ctk.CTkEntry(f_input, height=45, font=("Arial", 18), border_width=2)
-        # Aplica a validação
         self.entry_cod.configure(validate="key", validatecommand=vcmd)
         
         self.entry_cod.pack(fill="x", padx=10, pady=5)
@@ -150,33 +148,60 @@ class CaixaFrame(ctk.CTkFrame):
         self.entry_cod.configure(border_color="#E74C3C")
         self.lbl_status_leitor.configure(text="🔴 CLIQUE AQUI PARA ATIVAR O LEITOR", text_color="#E74C3C")
 
+    def buscar_produto_por_codigo(self, codigo_lido):
+        """Busca por ID interno ou varre a lista de EANs"""
+        # 1. Tenta ID direto
+        if codigo_lido in self.produtos_db:
+            return self.produtos_db[codigo_lido]
+        
+        # 2. Varre EANs
+        for id_interno, dados in self.produtos_db.items():
+            lista_eans = dados.get("codigos_barras", [])
+            if codigo_lido in lista_eans:
+                return dados
+        return None
+
     def adicionar_item(self, event=None):
         cod = self.entry_cod.get().strip()
         if not cod: return
         self.entry_cod.delete(0, 'end')
         
-        # Suporte a balança (Código começando com 2)
-        if cod.startswith("2") and len(cod) == 12:
-            plu = str(int(cod[1:6]))
-            if plu in self.produtos_db:
-                peso = float(cod[6:11]) / 1000
-                self.lancar(self.produtos_db[plu], cod, peso)
+        # --- LÓGICA DE BALANÇA (Melhorada para EAN-13 iniciando com 2) ---
+        if len(cod) == 13 and cod.startswith("2"):
+            plu_balanca = str(int(cod[1:6])) # Remove zeros à esquerda (ex: 00104 vira 104)
+            if plu_balanca in self.produtos_db:
+                peso_kg = float(cod[6:11]) / 1000 # 5 dígitos de peso em gramas
+                prod = self.produtos_db[plu_balanca]
+                # Lança sempre usando o ID interno como referência
+                self.lancar(prod, prod['id'], peso_kg)
                 return
+        # ----------------------------------------------------------------
 
-        if cod in self.produtos_db:
-            prod = self.produtos_db[cod]
+        # BUSCA INTELIGENTE (ID ou EAN)
+        prod = self.buscar_produto_por_codigo(cod)
+
+        if prod:
             unidade = prod.get('unidade', 'UN') 
+            # Passa o ID interno (prod['id']) para garantir consistência no carrinho
             if unidade in ['KG', 'G']: 
-                self.popup_peso(prod, cod)
+                self.popup_peso(prod, prod['id'])
             else: 
-                self.lancar(prod, cod, 1)
+                self.lancar(prod, prod['id'], 1)
         else:
             self.master.bell()
+            messagebox.showwarning("Erro", "Produto não encontrado!")
     
     def popup_peso(self, prod, cod):
         unidade = prod.get('unidade', 'UN')
-        titulo = f"Peso para {prod['nome']} ({unidade}):"
+        
+        # --- CORREÇÃO DE VISUALIZAÇÃO ---
+        # Formato solicitado: "Peso para (código) (Nome) - (unidade):"
+        titulo = f"Peso para {cod} {prod['nome']} - ({unidade}):"
+        # --------------------------------
+        
         d = ctk.CTkInputDialog(text=titulo, title="Pesagem")
+        
+        # Centraliza o popup na tela (opcional, mas ajuda na usabilidade)
         try:
             d.geometry(f"+{self.winfo_rootx() + 300}+{self.winfo_rooty() + 200}")
         except: pass
@@ -184,13 +209,16 @@ class CaixaFrame(ctk.CTkFrame):
         peso_input = d.get_input()
         if peso_input: 
             try: 
+                # Aceita tanto ponto quanto vírgula
                 peso_float = float(peso_input.replace(",", "."))
                 self.lancar(prod, cod, peso_float)
             except: pass
+        
+        # Devolve o foco para o campo de código após digitar o peso
         self.entry_cod.focus_set()
 
-
     def lancar(self, prod, cod, qtd):
+        # Nota: 'cod' aqui deve ser o ID interno para agrupar corretamente
         item_existente = None
         for item in self.carrinho:
             if item['codigo'] == cod:
@@ -513,17 +541,14 @@ class CaixaFrame(ctk.CTkFrame):
     def mostrar_ajuda(self):
         """Janela flutuante não-bloqueante com guia do caixa"""
         
-        # Evita abrir múltiplas janelas iguais
         if self.janela_ajuda is not None and self.janela_ajuda.winfo_exists():
-            self.janela_ajuda.lift() # Traz para frente
-            self.janela_ajuda.focus_force() # Dá o foco
+            self.janela_ajuda.lift()
+            self.janela_ajuda.focus_force()
             return
 
         self.janela_ajuda = ctk.CTkToplevel(self)
         self.janela_ajuda.title("Ajuda PDV")
         self.janela_ajuda.geometry("500x600")
-        
-        # Lógica para ficar no topo sem bloquear o uso
         self.janela_ajuda.transient(self) 
         self.janela_ajuda.lift()          
         self.janela_ajuda.focus_force()   

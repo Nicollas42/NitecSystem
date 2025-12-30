@@ -1,133 +1,90 @@
 {
-    "2001": {
-        "id_produto": "2001",
-        "nome": "PÃO FRANCÊS",
-        "rendimento": 50.0,
+    "201": {
+        "id_produto": "201",
+        "nome": "COXINHA",
+        "rendimento": 100.0,
+        "tempo_preparo": 90.0,
+        "custos": {
+            "insumos": 131.05,
+            "maquinas": 4.0,
+            "mao_obra": 30.0,
+            "total_lote": 165.05,
+            "unitario": 1.6505
+        },
         "ingredientes": [
             {
-                "id": "1001",
-                "nome": "FARINHA DE TRIGO ESPECIAL",
-                "qtd": 30.0
+                "id": "100",
+                "nome": "FARINHA",
+                "qtd": 3.0,
+                "un": "KG",
+                "custo_aprox": 15.0
             },
             {
-                "id": "1005",
-                "nome": "ÁGUA MINERAL",
-                "qtd": 18.0
+                "id": "101",
+                "nome": "RECHEIO",
+                "qtd": 4.0,
+                "un": "KG",
+                "custo_aprox": 100.0
             },
             {
-                "id": "1003",
-                "nome": "SAL REFINADO",
-                "qtd": 0.6
+                "id": "102",
+                "nome": "OLEO",
+                "qtd": 2.0,
+                "un": "L",
+                "custo_aprox": 16.0
             },
             {
-                "id": "1002",
-                "nome": "FERMENTO BIOLÓGICO SECO",
-                "qtd": 0.9
+                "id": "9000",
+                "nome": "AGUA FILTRADA",
+                "qtd": 1.0,
+                "un": "L",
+                "custo_aprox": 0.05
             }
-        ]
-    },
-    "2006": {
-        "id_produto": "2006",
-        "nome": "CAFÉ EXPRESSO",
-        "rendimento": 1.0,
-        "ingredientes": [
+        ],
+        "maquinas_uso": [
             {
-                "id": "1017",
-                "nome": "CAFÉ EM PÓ",
-                "qtd": 0.02
-            },
-            {
-                "id": "1004",
-                "nome": "AÇÚCAR CRISTAL",
-                "qtd": 0.01
-            },
-            {
-                "id": "1016",
-                "nome": "COPO DESCARTÁVEL",
-                "qtd": 1.0
+                "id": "MQ03",
+                "nome": "Fritadeira",
+                "tempo_min": 60
             }
-        ]
+        ],
+        "margem_lucro": 203.0
     },
-    "2003": {
-        "id_produto": "2003",
-        "nome": "BOLO DE CENOURA",
+    "202": {
+        "id_produto": "202",
+        "nome": "PAO CASEIRO",
         "rendimento": 10.0,
+        "tempo_preparo": 30.0,
+        "custos": {
+            "insumos": 30.2,
+            "maquinas": 10.5,
+            "mao_obra": 10.0,
+            "total_lote": 50.7,
+            "unitario": 5.07
+        },
         "ingredientes": [
             {
-                "id": "1012",
-                "nome": "CENOURA FRESCA",
-                "qtd": 3.0
+                "id": "100",
+                "nome": "FARINHA",
+                "qtd": 6.0,
+                "un": "KG",
+                "custo_aprox": 30.0
             },
             {
-                "id": "1006",
-                "nome": "OVOS VERMELHOS",
-                "qtd": 30.0
-            },
-            {
-                "id": "1009",
-                "nome": "ÓLEO DE SOJA",
-                "qtd": 2.0
-            },
-            {
-                "id": "1004",
-                "nome": "AÇÚCAR CRISTAL",
-                "qtd": 4.0
-            },
-            {
-                "id": "1001",
-                "nome": "FARINHA DE TRIGO ESPECIAL",
-                "qtd": 4.0
-            },
-            {
-                "id": "1013",
-                "nome": "CHOCOLATE EM PÓ",
-                "qtd": 1.0
+                "id": "9000",
+                "nome": "AGUA FILTRADA",
+                "qtd": 4.0,
+                "un": "L",
+                "custo_aprox": 0.2
             }
-        ]
-    },
-    "2011": {
-        "id_produto": "2011",
-        "nome": "COXINHA DE FRANGO C/ CATUPIRY",
-        "rendimento": 100.0,
-        "ingredientes": [
+        ],
+        "maquinas_uso": [
             {
-                "id": "1001",
-                "qtd": 3.0
-            },
-            {
-                "id": "1008",
-                "qtd": 0.5
-            },
-            {
-                "id": "1027",
-                "qtd": 4.0
-            },
-            {
-                "id": "1005",
-                "qtd": 3.0
+                "id": "MQ01",
+                "nome": "Forno Turbo",
+                "tempo_min": 60
             }
-        ]
-    },
-    "2004": {
-        "id_produto": "2004",
-        "nome": "COXINHA DE FRANGO",
-        "rendimento": 100.0,
-        "ingredientes": [
-            {
-                "id": "1001",
-                "nome": "FARINHA DE TRIGO ESPECIAL",
-                "qtd": 3.0
-            },
-            {
-                "id": "1018",
-                "nome": "PEITO DE FRANGO",
-                "qtd": 4.0
-            },
-            {
-                "id": "1005",
-                "nome": "ÁGUA MINERAL",
-                "qtd": 3.0
-            }
-        ]
+        ],
+        "margem_lucro": 195.0
     }
 }

@@ -3,8 +3,9 @@ import customtkinter as ctk
 from tkinter import ttk, messagebox
 from datetime import datetime, date
 from src.models import database
-# Importa a função auxiliar 'aplicar_mascara_data'
+# Importa a função auxiliar 'aplicar_mascara_data' e a NOVA função de formatação
 from src.utils.componentes_estilizados import CTkFloatingDropdown, CTkCalendar, aplicar_mascara_data
+from src.utils.formata_numeros_br import formata_numeros_br
 
 class AbaHistorico(ctk.CTkFrame):
     def __init__(self, master, produtos_ref, callback_atualizar):
@@ -24,13 +25,23 @@ class AbaHistorico(ctk.CTkFrame):
         
         self.lista_produtos_full = sorted([p['nome'] for p in self.produtos.values()])
         self.lista_usuarios_full = self.carregar_lista_usuarios()
-        self.lista_tipos = ["TODOS", "VENDA", "ENTRADA", "PRODUCAO", "TRANSFERENCIA", "PERDA"]
+        
+        # --- ATUALIZAÇÃO 1: Lista completa de tipos ---
+        self.lista_tipos = [
+            "TODOS", 
+            "ENTRADA_COMPRA_FUNDO", 
+            "ENTRADA_PRODUCAO_FUNDO", 
+            "SAIDA_PRODUCAO_FUNDO", 
+            "TRANSFERENCIA", 
+            "SAIDA_VENDA_FRENTE", 
+            "SAIDA_PERDA_FRENTE", 
+            "SAIDA_PERDA_FUNDO"
+        ]
 
         self.montar_layout()
         self.configurar_cores_tags()
         self.resetar_datas_hoje()
         self.filtrar_dados() 
-        print("DEBUG [Historico]: Inicialização concluída.")
 
     def montar_layout(self):
         header_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -49,10 +60,10 @@ class AbaHistorico(ctk.CTkFrame):
 
         # FILTROS
         ctk.CTkLabel(row, text="Tipo:", text_color="#ccc", font=("Arial", 11)).pack(side="left", padx=(10, 2))
-        self.ent_tipo = ctk.CTkEntry(row, width=120, placeholder_text="Selecione...")
+        self.ent_tipo = ctk.CTkEntry(row, width=180, placeholder_text="Selecione...")
         self.ent_tipo.pack(side="left", padx=2)
         self.ent_tipo.bind("<Return>", lambda e: self.aplicar_filtro())
-        self.dropdown_tipo = CTkFloatingDropdown(self.ent_tipo, self.lista_tipos, width=150)
+        self.dropdown_tipo = CTkFloatingDropdown(self.ent_tipo, self.lista_tipos, width=200)
 
         ctk.CTkLabel(row, text="Prod:", text_color="#ccc", font=("Arial", 11)).pack(side="left", padx=(10, 2))
         self.ent_prod = ctk.CTkEntry(row, width=140, placeholder_text="Digite...")
@@ -82,6 +93,39 @@ class AbaHistorico(ctk.CTkFrame):
         scroll.pack(side="right", fill="y")
         self.tree.pack(side="left", fill="both", expand=True)
 
+    def configurar_cores_tags(self):
+        """
+        --- ATUALIZAÇÃO 2: Configuração de Cores Específicas ---
+        Verde Limão para Entrada Produção.
+        Vermelho com texto preto para Saída Produção.
+        Cores distintas para os demais.
+        """
+        # (Background, Foreground)
+        colors = {
+            # Compra (Azul padrão)
+            "ENTRADA_COMPRA_FUNDO":     ("#2980B9", "white"),
+            
+            # Produção (Solicitação Especial)
+            "ENTRADA_PRODUCAO_FUNDO":   ("#C6FF00", "black"), # Verde Limão
+            "SAIDA_PRODUCAO_FUNDO":     ("#FF5252", "black"), # Vermelho Claro (Matéria Prima saindo)
+            
+            # Transferência (Roxo)
+            "TRANSFERENCIA":            ("#BB8FCE", "black"),
+            
+            # Venda (Verde suave ou Branco)
+            "SAIDA_VENDA_FRENTE":       ("#EAFAF1", "black"),
+            
+            # Perdas (Laranja/Vermelho Escuro)
+            "SAIDA_PERDA_FRENTE":       ("#E74C3C", "white"),
+            "SAIDA_PERDA_FUNDO":        ("#C0392B", "white"),
+            
+            # Ajustes Manuais
+            "ENTRADA_AJUSTE":           ("#F7DC6F", "black")
+        }
+        
+        for tag, (bg, fg) in colors.items():
+            self.tree.tag_configure(tag, background=bg, foreground=fg)
+
     def criar_campo_data(self, parent, label, attr_name):
         ctk.CTkLabel(parent, text=label, text_color="#ccc", font=("Arial", 11)).pack(side="left", padx=(5, 2))
         entry = ctk.CTkEntry(parent, width=90)
@@ -94,18 +138,14 @@ class AbaHistorico(ctk.CTkFrame):
 
     def ao_digitar_data_entry(self, event, entry_widget):
         aplicar_mascara_data(event, entry_widget)
-
         if event.keysym in ["Return", "Escape", "Tab"]: return
-        
         if self.popup_calendario and self.popup_calendario.winfo_exists():
             if self.popup_calendario.entry == entry_widget:
                 self.popup_calendario.ao_digitar_data(event)
                 return
-
         self.abrir_calendario(event, entry_widget)
 
     def abrir_calendario(self, event, entry_widget):
-        # Fecha Dropdowns explicitamente antes de abrir o calendário
         if self.dropdown_prod: self.dropdown_prod.fechar_lista()
         if self.dropdown_user: self.dropdown_user.fechar_lista()
         if self.dropdown_tipo: self.dropdown_tipo.fechar_lista()
@@ -126,8 +166,8 @@ class AbaHistorico(ctk.CTkFrame):
 
     def restaurar_layout_colunas(self):
         larguras = {
-            "data": 140, "tipo": 100, "produto": 220, "qtd": 100, 
-            "valor": 100, "usuario": 100, "motivo": 250
+            "data": 140, "tipo": 180, "produto": 220, "qtd": 80, 
+            "valor": 100, "usuario": 100, "motivo": 200
         }
         self.tree.configure(displaycolumns=self.cols)
         for col, width in larguras.items():
@@ -156,6 +196,7 @@ class AbaHistorico(ctk.CTkFrame):
         f_ini, f_fim = self.get_data_filtro(self.ent_data_ini), self.get_data_filtro(self.ent_data_fim)
         f_tipo, f_prod, f_user = self.ent_tipo.get().strip().upper() or "TODOS", self.ent_prod.get().strip().lower(), self.ent_user.get().strip().lower()
         linhas = []
+        
         for m in todos_movs:
             data_raw = m.get('data', '')
             try: dt_mov = datetime.strptime(data_raw.split()[0], "%Y-%m-%d").date()
@@ -163,20 +204,48 @@ class AbaHistorico(ctk.CTkFrame):
             if f_ini and dt_mov and dt_mov < f_ini: continue
             if f_fim and dt_mov and dt_mov > f_fim: continue
             if f_tipo != "TODOS" and f_tipo not in m.get('tipo', ''): continue
-            if f_prod and f_prod not in m.get('nome', '').lower(): continue
-            if f_user and f_user not in m.get('usuario', '').lower(): continue
+            
+            # --- PROTEÇÃO CONTRA DADOS NULOS/NONE ---
+            # Garante que sempre seja string, mesmo se vier None do banco
+            nome_mov = str(m.get('nome', '') or '')
+            user_mov = str(m.get('usuario', '') or '')
+            motivo_mov = str(m.get('motivo', '') or '')
+            # ----------------------------------------
+
+            if f_prod and f_prod not in nome_mov.lower(): continue
+            if f_user and f_user not in user_mov.lower(): continue
+            
             cod = str(m.get('cod')); p = self.produtos.get(cod, {})
-            qtd = float(m.get('qtd', 0)); is_insumo = p.get('tipo') == 'INSUMO'
+            qtd = float(m.get('qtd', 0))
+            is_insumo = p.get('tipo') == 'INSUMO'
+            
+            # Lógica de valor unitário para o histórico
             base = p.get('custo', 0.0) if (is_insumo or 'PRODUCAO' in m.get('tipo', '') or 'ENTRADA' in m.get('tipo', '')) else p.get('preco', 0.0)
             v_total = abs(qtd) * base
+            
+            qtd_fmt = formata_numeros_br(qtd, moeda=False)
+            valor_fmt = formata_numeros_br(v_total, moeda=True)
+            
+            tipo_mov = m.get('tipo', '')
+
             linhas.append({
-                'display': (self.formatar_data_br(data_raw), m.get('tipo'), m.get('nome'), f"{self.formatar_numero_inteligente(qtd)} {p.get('unidade', 'UN')}", f"R$ {v_total:.2f}", m.get('usuario'), m.get('motivo')),
-                'tags': (m.get('tipo'),), 'sort_data': data_raw, 'sort_produto': m.get('nome', '').lower(), 'sort_qtd': qtd, 'sort_valor': v_total, 'sort_usuario': m.get('usuario', '').lower(), 'sort_tipo': m.get('tipo', ''), 'sort_motivo': m.get('motivo', '').lower()
+                'display': (self.formatar_data_br(data_raw), tipo_mov, nome_mov, f"{qtd_fmt} {p.get('unidade', 'UN')}", f"R$ {valor_fmt}", user_mov, motivo_mov),
+                'tags': (tipo_mov,), 
+                'sort_data': data_raw, 
+                'sort_produto': nome_mov.lower(), 
+                'sort_qtd': qtd, 
+                'sort_valor': v_total, 
+                'sort_usuario': user_mov.lower(), 
+                'sort_tipo': tipo_mov, 
+                'sort_motivo': motivo_mov.lower()
             })
+            
         if self.sort_dir != "original" and self.sort_col:
             key_map = {"data": "sort_data", "tipo": "sort_tipo", "produto": "sort_produto", "qtd": "sort_qtd", "valor": "sort_valor", "usuario": "sort_usuario", "motivo": "sort_motivo"}
             linhas.sort(key=lambda x: x[key_map[self.sort_col]], reverse=(self.sort_dir == "desc"))
-        for item in linhas: self.tree.insert("", "end", values=item['display'], tags=item['tags'])
+        
+        for item in linhas: 
+            self.tree.insert("", "end", values=item['display'], tags=item['tags'])
 
     def configurar_colunas_inicial(self):
         titulos = {"data": "DATA/HORA", "tipo": "TIPO", "produto": "PRODUTO", "qtd": "QTD", "valor": "VALOR (R$)", "usuario": "USUÁRIO", "motivo": "MOTIVO"}
@@ -201,11 +270,11 @@ class AbaHistorico(ctk.CTkFrame):
     def carregar_lista_usuarios(self):
         try:
             movs = database.carregar_json(database.ARQ_MOVIMENTOS)
-            return sorted(list({m.get('usuario') for m in movs if m.get('usuario')})) or ["Admin"]
+            # Filtra Nones antes de adicionar ao set
+            return sorted(list({str(m.get('usuario') or 'Admin') for m in movs})) or ["Admin"]
         except: return ["Admin"]
 
     def atualizar(self):
-        print("DEBUG [Historico]: Atualizando dados da aba...")
         self.lista_produtos_full = sorted([p['nome'] for p in self.produtos.values()])
         self.dropdown_prod.atualizar_dados(self.lista_produtos_full)
         self.lista_usuarios_full = self.carregar_lista_usuarios()
@@ -216,12 +285,6 @@ class AbaHistorico(ctk.CTkFrame):
         if not hasattr(self, 'ent_data_ini') or not hasattr(self, 'ent_data_fim'): return
         hoje = date.today().strftime("%d/%m/%Y")
         for e in [self.ent_data_ini, self.ent_data_fim]: e.delete(0, 'end'); e.insert(0, hoje)
-
-    def configurar_cores_tags(self):
-        colors = {"SAIDA_VENDA": "#e6b0aa", "ENTRADA_FUNDO": "#abebc6", "ENTRADA_PRODUCAO": "#abebc6", "SAIDA_PRODUCAO": "#fad7a0", "TRANSFERENCIA": "#d7bde2", "PERDA_FUNDO": "#fad7a0"}
-        for k, v in colors.items(): self.tree.tag_configure(k, background=v, foreground="black")
-
-    def formatar_numero_inteligente(self, v): return f"{int(v)}" if float(v).is_integer() else f"{v:.3f}".rstrip('0').rstrip('.')
     
     def formatar_data_br(self, s):
         try: return datetime.strptime(str(s).split('.')[0], "%Y-%m-%d %H:%M:%S").strftime("%d/%m/%Y %H:%M:%S")
@@ -232,10 +295,8 @@ class AbaHistorico(ctk.CTkFrame):
         except: return None
 
     def mostrar_ajuda(self):
-        # Fecha Dropdowns explicitamente antes de abrir a ajuda
         if self.dropdown_prod: self.dropdown_prod.fechar_lista()
         if self.dropdown_user: self.dropdown_user.fechar_lista()
         if self.dropdown_tipo: self.dropdown_tipo.fechar_lista()
-        
         from src.utils.textos_ajuda import abrir_ajuda
         abrir_ajuda(self, "historico")

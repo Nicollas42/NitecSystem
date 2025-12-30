@@ -1,83 +1,1892 @@
 [
     {
-        "id": 1766829126,
-        "data": "27/12/2025 06:52",
-        "total": 30.419999999999998,
+        "id": 1767063653,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
         "itens": [
             {
-                "produto": "PÃO FRANCÊS",
-                "qtd": 0.5,
-                "total": 8.45
-            },
-            {
-                "produto": "PÃO DE QUEIJO",
-                "qtd": 0.3,
-                "total": 11.969999999999999
-            },
-            {
-                "produto": "CAFÉ EXPRESSO",
-                "qtd": 2,
-                "total": 10.0
-            }
-        ],
-        "operador": "Ana Caixa",
-        "pagamento": "Débito"
-    },
-    {
-        "id": 1766829126,
-        "data": "27/12/2025 06:52",
-        "total": 82.5,
-        "itens": [
-            {
-                "produto": "COXINHA DE FRANGO",
-                "qtd": 5,
-                "total": 32.5
-            },
-            {
-                "produto": "COCA COLA 2L",
-                "qtd": 2,
-                "total": 28.0
-            },
-            {
-                "produto": "BOLO DE CENOURA",
+                "produto": "COXINHA",
                 "qtd": 1,
-                "total": 22.0
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
             }
         ],
         "operador": "Ana Caixa",
-        "pagamento": "Pix"
-    },
-    {
-        "id": 1766829126,
-        "data": "27/12/2025 06:52",
-        "total": 40.9,
-        "itens": [
-            {
-                "produto": "PÃO FRANCÊS",
-                "qtd": 1.0,
-                "total": 16.9
-            },
-            {
-                "produto": "MISTO QUENTE",
-                "qtd": 2,
-                "total": 24.0
-            }
-        ],
-        "operador": "Carlos Dono",
         "pagamento": "Dinheiro"
     },
     {
-        "id": 1766859361,
-        "data": "27/12/2025 15:16",
-        "total": 42.0,
+        "id": 1767063653,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
         "itens": [
             {
-                "produto": "COCA COLA 2L",
-                "qtd": 3.0,
-                "total": 42.0
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
             }
         ],
-        "operador": "Admin (Dev)",
-        "pagamento": "Pix"
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063653,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063653,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063653,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063653,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063653,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063653,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063653,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063653,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063653,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063653,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063653,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063653,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063653,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063653,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063653,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063653,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063653,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063653,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063653,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063653,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063653,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063653,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063653,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063654,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063655,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063655,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063655,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063655,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063655,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063655,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063655,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063655,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063655,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063655,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063655,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063655,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063655,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063655,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063655,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063655,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063655,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063655,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063655,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063655,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063655,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063655,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063655,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063655,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063655,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063655,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063656,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063656,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063656,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063656,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063656,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063656,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063656,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063656,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063656,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063656,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063656,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063656,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063656,
+        "data": "30/12/2025 00:00",
+        "total": 26.5,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 1,
+                "total": 5.0
+            },
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 0.5,
+                "total": 7.5
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063656,
+        "data": "30/12/2025 00:00",
+        "total": 24.0,
+        "itens": [
+            {
+                "produto": "COXINHA",
+                "qtd": 2,
+                "total": 10.0
+            },
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063656,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063656,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767063656,
+        "data": "30/12/2025 00:00",
+        "total": 15.0,
+        "itens": [
+            {
+                "produto": "PAO CASEIRO",
+                "qtd": 1.0,
+                "total": 15.0
+            }
+        ],
+        "operador": "Ana Caixa",
+        "pagamento": "Dinheiro"
     }
 ]
