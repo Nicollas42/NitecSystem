@@ -1,7 +1,7 @@
 # src/controllers/estoque_controller.py
 import datetime
 import os 
-from datetime import datetime as dt # Alias para evitar conflito de nomes
+from datetime import datetime as dt 
 from src.models import database
 
 # Constantes de Movimentação
@@ -69,6 +69,10 @@ class EstoqueController:
         novo_id = str(dados_produto['id'])
         novo_nome = dados_produto['nome'].strip().upper()
         
+        # --- CORREÇÃO: Captura e trata o Grupo ---
+        novo_grupo = str(dados_produto.get('grupo', '')).strip().upper()
+        # -----------------------------------------
+
         novos_eans = dados_produto.get('codigos_barras', []) 
         if isinstance(novos_eans, str): novos_eans = []
 
@@ -93,12 +97,12 @@ class EstoqueController:
         estoque_frente = item_atual.get('estoque_atual', 0.0)
         estoque_fundo = item_atual.get('estoque_fundo', 0.0)
         
-        # Preserva a data de cadastro ou cria hoje se for novo
         data_cadastro = item_atual.get('data_cadastro', dt.now().strftime("%d/%m/%Y"))
 
         novo_produto = {
             "id": novo_id,
             "nome": novo_nome,
+            "grupo": novo_grupo,  # <--- CAMPO ADICIONADO AQUI
             "codigos_barras": novos_eans,
             "unidade": dados_produto.get('unidade', 'UN'), 
             "categoria": dados_produto.get('categoria', 'Outros'),
@@ -109,7 +113,7 @@ class EstoqueController:
             "estoque_minimo": float(str(dados_produto.get('minimo', 0)).replace(',', '.')),
             "preco": float(str(dados_produto.get('preco', 0)).replace(',', '.')),
             "custo": float(str(dados_produto.get('custo', 0)).replace(',', '.')),
-            "data_cadastro": data_cadastro, # <--- CAMPO NOVO
+            "data_cadastro": data_cadastro, 
             "ativo": True
         }
         produtos[novo_id] = novo_produto

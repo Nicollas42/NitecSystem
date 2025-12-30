@@ -1,131 +1,50 @@
 {
-    "2001": {
-        "id_produto": "2001",
-        "nome": "PÃO FRANCÊS",
+    "201": {
+        "id_produto": "201",
+        "nome": "PÃO FRANCÊS TRADICIONAL",
         "rendimento": 50.0,
         "ingredientes": [
             {
-                "id": "1001",
-                "nome": "FARINHA DE TRIGO ESPECIAL",
-                "qtd": 30.0
+                "id": "100",
+                "qtd": 30
             },
             {
-                "id": "1005",
-                "nome": "ÁGUA MINERAL",
-                "qtd": 18.0
-            },
-            {
-                "id": "1003",
-                "nome": "SAL REFINADO",
-                "qtd": 0.6
-            },
-            {
-                "id": "1002",
-                "nome": "FERMENTO BIOLÓGICO SECO",
-                "qtd": 0.9
+                "id": "104",
+                "qtd": 0.5
             }
         ]
     },
-    "2006": {
-        "id_produto": "2006",
-        "nome": "CAFÉ EXPRESSO",
-        "rendimento": 1.0,
-        "ingredientes": [
-            {
-                "id": "1017",
-                "nome": "CAFÉ EM PÓ",
-                "qtd": 0.02
-            },
-            {
-                "id": "1004",
-                "nome": "AÇÚCAR CRISTAL",
-                "qtd": 0.01
-            },
-            {
-                "id": "1016",
-                "nome": "COPO DESCARTÁVEL",
-                "qtd": 1.0
-            }
-        ]
-    },
-    "2003": {
-        "id_produto": "2003",
-        "nome": "BOLO DE CENOURA",
+    "301": {
+        "id_produto": "301",
+        "nome": "BOLO DE CHOCOLATE",
         "rendimento": 10.0,
         "ingredientes": [
             {
-                "id": "1012",
-                "nome": "CENOURA FRESCA",
-                "qtd": 3.0
+                "id": "100",
+                "qtd": 5
             },
             {
-                "id": "1006",
-                "nome": "OVOS VERMELHOS",
-                "qtd": 30.0
+                "id": "105",
+                "qtd": 2
             },
             {
-                "id": "1009",
-                "nome": "ÓLEO DE SOJA",
-                "qtd": 2.0
-            },
-            {
-                "id": "1004",
-                "nome": "AÇÚCAR CRISTAL",
-                "qtd": 4.0
-            },
-            {
-                "id": "1001",
-                "nome": "FARINHA DE TRIGO ESPECIAL",
-                "qtd": 4.0
-            },
-            {
-                "id": "1013",
-                "nome": "CHOCOLATE EM PÓ",
-                "qtd": 1.0
+                "id": "102",
+                "qtd": 10
             }
         ]
     },
-    "2011": {
-        "id_produto": "2011",
-        "nome": "COXINHA DE FRANGO C/ CATUPIRY",
-        "rendimento": 30.0,
-        "ingredientes": [
-            {
-                "id": "1004",
-                "nome": "AÇÚCAR CRISTAL",
-                "qtd": "0300"
-            },
-            {
-                "id": "1029",
-                "nome": "CALABRESA DEFUMADA",
-                "qtd": "0300"
-            },
-            {
-                "id": "1002",
-                "nome": "FERMENTO BIOLÓGICO SECO",
-                "qtd": "0300"
-            }
-        ]
-    },
-    "2004": {
-        "id_produto": "2004",
-        "nome": "COXINHA DE FRANGO",
+    "401": {
+        "id_produto": "401",
+        "nome": "COXINHA FRANGO",
         "rendimento": 100.0,
         "ingredientes": [
             {
-                "id": "1001",
-                "nome": "FARINHA DE TRIGO ESPECIAL",
-                "qtd": 3.0
+                "id": "100",
+                "qtd": 5
             },
             {
-                "id": "1018",
-                "nome": "PEITO DE FRANGO",
-                "qtd": 4.0
-            },
-            {
-                "id": "1005",
-                "nome": "ÁGUA MINERAL",
-                "qtd": 3.0
+                "id": "106",
+                "qtd": 3
             }
         ]
     }
