@@ -58,30 +58,28 @@ class AbaReceitas(ctk.CTkFrame):
         
         for cod, p in self.produtos.items():
             tipo = p.get('tipo', 'PRODUTO')
+            
+            # Lista da Esquerda: Apenas produtos fabricados (Internos)
             if tipo == 'INTERNO':
-                # O ID (cod) é guardado na TAG da linha
                 self.lista_produtos.insert("", "end", values=(p['nome'],), tags=(str(cod),))
             
-            if tipo in ['INSUMO', 'PRODUTO']:
+            # Dropdown de Ingredientes: APENAS TIPO 'INSUMO'
+            if tipo == 'INSUMO':
                 insumos.append(p['nome'])
         
         self.modulo_ing.atualizar_dropdown(sorted(insumos))
-        self.modulo_maq.carregar_combo() # Garante que as máquinas apareçam
+        self.modulo_maq.carregar_combo() 
 
     def carregar_produto(self, event):
         try:
             sel = self.lista_produtos.selection()
             if not sel: return
             
-            # --- CORREÇÃO DO ERRO KEYERROR ---
-            # Pegamos a tag e forçamos converter para STRING
             tag_valor = self.lista_produtos.item(sel[0])['tags'][0]
             cod = str(tag_valor) 
-            # ---------------------------------
 
             self.id_produto_atual = cod
             
-            # Verifica se o produto ainda existe no dicionário (segurança)
             if cod not in self.produtos:
                 print(f"ERRO: Produto ID {cod} não encontrado no dicionário self.produtos")
                 return
@@ -89,11 +87,9 @@ class AbaReceitas(ctk.CTkFrame):
             nome_prod = self.produtos[cod]['nome']
             self.lbl_selecao.configure(text=f"Editando: {nome_prod}")
             
-            # Busca receita no banco
             receitas_db = self.controller.carregar_receitas()
             rec = receitas_db.get(cod, {})
             
-            # Distribui dados para as sub-abas
             self.modulo_ing.atualizar_dados(rec.get('ingredientes', []))
             self.modulo_maq.atualizar_dados(rec.get('maquinas_uso', []), rec.get('tempo_preparo', 60))
             self.modulo_fin.set_valores(rec.get('rendimento', 1), rec.get('margem_lucro', 100))
@@ -108,7 +104,6 @@ class AbaReceitas(ctk.CTkFrame):
     def recalcular_custos_tempo_real(self):
         if not self.id_produto_atual: return
 
-        # Coleta dados das abas
         ingredientes = self.modulo_ing.ingredientes_lista
         maquinas = self.modulo_maq.maquinas_lista
         try: tempo_homem = float(self.modulo_maq.get_tempo_humano())
@@ -117,10 +112,8 @@ class AbaReceitas(ctk.CTkFrame):
         tarifas = self.controller.carregar_tarifas()
         bd_maquinas = self.controller.carregar_maquinas()
 
-        # 1. Custo Matéria Prima
         custo_insumos = sum(float(i.get('custo_aprox', 0)) for i in ingredientes)
 
-        # 2. Custo Máquinas (Energia + Gás)
         custo_maquinas = 0.0
         for uso in maquinas:
             maq = bd_maquinas.get(uso['id'])
@@ -132,12 +125,9 @@ class AbaReceitas(ctk.CTkFrame):
                 custo_gas = gas_kg * tarifas['gas_kg']
                 custo_maquinas += (custo_luz + custo_gas)
 
-        # 3. Custo Mão de Obra
         custo_mod = (tempo_homem / 60.0) * tarifas['mao_obra_h']
-        
         custo_total = custo_insumos + custo_maquinas + custo_mod
         
-        # 4. Totais
         try: rendimento = self.modulo_fin.get_rendimento()
         except: rendimento = 1
         
@@ -148,7 +138,6 @@ class AbaReceitas(ctk.CTkFrame):
         
         preco_sug = custo_unit * (1 + margem)
 
-        # Envia para tela
         self.modulo_fin.atualizar_resumo(
             custo_insumos,
             custo_maquinas + custo_mod,

@@ -1888,5 +1888,47 @@
         ],
         "operador": "Ana Caixa",
         "pagamento": "Dinheiro"
+    },
+    {
+        "id": 1767068030,
+        "data": "30/12/2025 01:13",
+        "total": 14.0,
+        "itens": [
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 1,
+                "total": 14.0
+            }
+        ],
+        "operador": "Admin (Dev)",
+        "pagamento": "Débito"
+    },
+    {
+        "id": 1767068110,
+        "data": "30/12/2025 01:15",
+        "total": 154.0,
+        "itens": [
+            {
+                "produto": "COCA-COLA 2L",
+                "qtd": 11,
+                "total": 154.0
+            }
+        ],
+        "operador": "Admin (Dev)",
+        "pagamento": "Crédito"
+    },
+    {
+        "id": 1767068290,
+        "data": "30/12/2025 01:18",
+        "total": 597.0,
+        "itens": [
+            {
+                "produto": "11121",
+                "qtd": 3,
+                "total": 597.0
+            }
+        ],
+        "operador": "Admin (Dev)",
+        "pagamento": "Crédito"
     }
 ]

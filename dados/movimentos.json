@@ -2385,5 +2385,137 @@
         "novo": 147.0,
         "motivo": "Venda PDV",
         "usuario": "Ana Caixa"
+    },
+    {
+        "data": "2025-12-30 01:13:50",
+        "tipo": "SAIDA_VENDA_FRENTE",
+        "cod": "501",
+        "nome": "COCA-COLA 2L",
+        "qtd": -1.0,
+        "anterior": 436.0,
+        "novo": 435.0,
+        "motivo": "Venda PDV 1767068030",
+        "usuario": "Admin (Dev)"
+    },
+    {
+        "data": "2025-12-30 01:15:10",
+        "tipo": "SAIDA_VENDA_FRENTE",
+        "cod": "501",
+        "nome": "COCA-COLA 2L",
+        "qtd": -11.0,
+        "anterior": 435.0,
+        "novo": 424.0,
+        "motivo": "Venda PDV 1767068110",
+        "usuario": "Admin (Dev)"
+    },
+    {
+        "data": "2025-12-30 01:17:21",
+        "tipo": "ENTRADA_FUNDO",
+        "cod": "424242",
+        "nome": "11121",
+        "qtd": 200.0,
+        "anterior": 0.0,
+        "novo": 200.0,
+        "motivo": "111",
+        "usuario": "Admin"
+    },
+    {
+        "data": "2025-12-30 01:17:27",
+        "tipo": "PERDA_FUNDO",
+        "cod": "424242",
+        "nome": "11121",
+        "qtd": 2.0,
+        "anterior": 200.0,
+        "novo": 198.0,
+        "motivo": "111",
+        "usuario": "Admin"
+    },
+    {
+        "data": "2025-12-30 01:17:29",
+        "tipo": "PERDA_FUNDO",
+        "cod": "424242",
+        "nome": "11121",
+        "qtd": 2.0,
+        "anterior": 198.0,
+        "novo": 196.0,
+        "motivo": "111",
+        "usuario": "Admin"
+    },
+    {
+        "data": "2025-12-30 01:18:01",
+        "tipo": "ENTRADA_FRENTE",
+        "cod": "424242",
+        "nome": "11121",
+        "qtd": 111.0,
+        "anterior": 0.0,
+        "novo": 111.0,
+        "motivo": "1111",
+        "usuario": "Admin"
+    },
+    {
+        "data": "2025-12-30 01:18:10",
+        "tipo": "SAIDA_VENDA_FRENTE",
+        "cod": "424242",
+        "nome": "11121",
+        "qtd": -3.0,
+        "anterior": 111.0,
+        "novo": 108.0,
+        "motivo": "Venda PDV 1767068290",
+        "usuario": "Admin (Dev)"
+    },
+    {
+        "data": "2025-12-30 10:31:48",
+        "tipo": "SAIDA_PRODUCAO_FUNDO",
+        "cod": "100",
+        "nome": "FARINHA",
+        "qtd": 0.30000000000000004,
+        "anterior": 4865.0,
+        "novo": 4864.7,
+        "motivo": "Prod 10 COXINHA",
+        "usuario": "Admin"
+    },
+    {
+        "data": "2025-12-30 10:31:48",
+        "tipo": "SAIDA_PRODUCAO_FUNDO",
+        "cod": "101",
+        "nome": "RECHEIO",
+        "qtd": 0.4,
+        "anterior": 4980.0,
+        "novo": 4979.6,
+        "motivo": "Prod 10 COXINHA",
+        "usuario": "Admin"
+    },
+    {
+        "data": "2025-12-30 10:31:48",
+        "tipo": "SAIDA_PRODUCAO_FUNDO",
+        "cod": "102",
+        "nome": "OLEO",
+        "qtd": 0.2,
+        "anterior": 4990.0,
+        "novo": 4989.8,
+        "motivo": "Prod 10 COXINHA",
+        "usuario": "Admin"
+    },
+    {
+        "data": "2025-12-30 10:31:48",
+        "tipo": "SAIDA_PRODUCAO_FUNDO",
+        "cod": "9000",
+        "nome": "AGUA FILTRADA",
+        "qtd": 0.1,
+        "anterior": 4915.0,
+        "novo": 4914.9,
+        "motivo": "Prod 10 COXINHA",
+        "usuario": "Admin"
+    },
+    {
+        "data": "2025-12-30 10:31:48",
+        "tipo": "ENTRADA_PRODUCAO_FUNDO",
+        "cod": "201",
+        "nome": "COXINHA",
+        "qtd": 10.0,
+        "anterior": 0.0,
+        "novo": 10.0,
+        "motivo": "Produção Concluída",
+        "usuario": "Admin"
     }
 ]
