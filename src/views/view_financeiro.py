@@ -1,17 +1,19 @@
 # src/views/view_financeiro.py
 import customtkinter as ctk
 from tkinter import ttk, messagebox
-from src.models import database # CORREÇÃO AQUI
+from src.controllers.estoque_controller import EstoqueController
 
 class FinanceiroFrame(ctk.CTkFrame):
     def __init__(self, master, usuario_dados, callback_voltar):
         super().__init__(master)
         self.voltar_menu = callback_voltar
         
-        # Coleta dados
-        self.vendas = database.carregar_json(database.ARQ_VENDAS)
-        self.movimentos = database.carregar_json(database.ARQ_MOVIMENTOS) # Usar movimentos para ver perdas
-        self.produtos = database.carregar_produtos()
+        # Conecta ao Controller SQL
+        self.ctrl = EstoqueController()
+        
+        self.vendas = self.ctrl.carregar_vendas()
+        self.movimentos = self.ctrl.carregar_movimentacoes()
+        self.produtos = self.ctrl.carregar_produtos()
 
         self.montar_layout()
 
@@ -27,22 +29,23 @@ class FinanceiroFrame(ctk.CTkFrame):
         ctk.CTkButton(top, text="?", width=30, fg_color="#333", hover_color="#444", 
                       command=self.mostrar_ajuda).pack(side="left", padx=5)
 
-        ctk.CTkLabel(top, text="ANÁLISE FINANCEIRA", font=("Arial", 16, "bold")).pack(side="left", padx=20)
+        ctk.CTkLabel(top, text="ANÁLISE FINANCEIRA (PostgreSQL)", font=("Arial", 16, "bold")).pack(side="left", padx=20)
 
         # CÁLCULOS
-        total_vendas = sum(v['total'] for v in self.vendas)
+        total_vendas = sum(float(v['total']) for v in self.vendas)
         qtd_vendas = len(self.vendas)
         
         total_perdas = 0
         # Filtra apenas movimentos de PERDA
-        sobras = [m for m in self.movimentos if m['tipo'] == 'PERDA']
+        sobras = [m for m in self.movimentos if 'PERDA' in m['tipo']]
         
         for s in sobras:
-            cod = s['cod']
+            cod = str(s['cod'])
             # Busca preço atual
-            preco = self.produtos[cod]['preco'] if cod in self.produtos else 0
-            # s['qtd'] em PERDA é negativo, usamos abs() para somar o valor positivo
-            total_perdas += (abs(s['qtd']) * preco)
+            if cod in self.produtos:
+                preco = float(self.produtos[cod]['preco'])
+                # s['qtd'] em PERDA é negativo no movimento, mas queremos o absoluto para somar valor
+                total_perdas += (abs(float(s['qtd'])) * preco)
 
         lucro_bruto = total_vendas - total_perdas
 
@@ -74,8 +77,10 @@ class FinanceiroFrame(ctk.CTkFrame):
         tree.column("total", width=100, anchor="e")
         tree.pack(fill="both", expand=True)
 
-        for v in self.vendas[::-1]:
-            tree.insert("", "end", values=(v['data'], v['operador'], v.get('pagamento', 'Dinheiro'), f"{v['total']:.2f}"))
+        # Inverte para mostrar as mais recentes primeiro (já vem ordenado do banco, mas reforça)
+        for v in self.vendas:
+            val = float(v['total'])
+            tree.insert("", "end", values=(v['data'], v['operador'], v.get('pagamento', 'Dinheiro'), f"{val:.2f}"))
 
     def criar_card(self, parent, titulo, valor, cor, col):
         card = ctk.CTkFrame(parent, fg_color=cor, height=100)
@@ -88,7 +93,7 @@ class FinanceiroFrame(ctk.CTkFrame):
         msg = """
         💰 ANÁLISE FINANCEIRA
 
-        Este painel mostra a saúde real do seu negócio.
+        Este painel mostra a saúde real do seu negócio baseada no Banco de Dados.
 
         📊 Entenda os Números:
         - Receita Bruta: Soma de todas as vendas finalizadas no Caixa.
@@ -97,6 +102,5 @@ class FinanceiroFrame(ctk.CTkFrame):
 
         📝 Histórico:
         - A tabela abaixo mostra as últimas vendas realizadas.
-        - As sobras não aparecem na tabela, mas impactam o card vermelho de Perdas.
         """
         messagebox.showinfo("Ajuda - Financeiro", msg)

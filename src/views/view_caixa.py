@@ -1,30 +1,25 @@
 # src/views/view_caixa.py
-
 import customtkinter as ctk
 from tkinter import ttk, messagebox
 from datetime import datetime
-import time
 from src.controllers.estoque_controller import EstoqueController
-
-# --- IMPORTS ---
 from src.controllers import config_manager
-from src.models import database
-
 
 class CaixaFrame(ctk.CTkFrame):
     def __init__(self, master, usuario_dados, callback_voltar):
         super().__init__(master)
         self.usuario = usuario_dados
         self.voltar_menu = callback_voltar
+        
+        # Conecta ao PostgreSQL
         self.estoque_ctrl = EstoqueController()
         
-        # Controle da janela de ajuda
         self.janela_ajuda = None
-        
         self.config = config_manager.carregar_config()
         self.cor_destaque = self.config["cor_destaque"]
         
-        self.produtos_db = database.carregar_produtos()
+        # Carrega produtos direto do banco
+        self.produtos_db = self.estoque_ctrl.carregar_produtos()
         
         self.carrinho = [] 
         self.contador_id = 0
@@ -34,7 +29,6 @@ class CaixaFrame(ctk.CTkFrame):
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=2)
         self.grid_columnconfigure(1, weight=1)
-
         self.montar_interface()
 
     def validar_entrada(self, texto_novo):
@@ -515,9 +509,26 @@ class CaixaFrame(ctk.CTkFrame):
         for item in itens_validos:
             itens_para_salvar.append({
                 "produto": item['nome'], 
+                "codigo": item['codigo'],
                 "qtd": item['qtd'], 
                 "total": item['total']
             })
+
+        # CHAMA O CONTROLLER NOVO (POSTGRESQL)
+        ok, msg = self.estoque_ctrl.registrar_venda(total_final, itens_para_salvar, self.usuario['nome'], pagamento=metodo_pagamento)
+
+        if ok:
+            messagebox.showinfo("Sucesso", msg)
+            self.carrinho = []
+            self.contador_id = 0
+            self.ultimo_item_focado = None
+            for i in self.tree.get_children(): self.tree.delete(i)
+            self.atualizar_total()
+            self.entry_cod.focus_set()
+            # Recarrega estoque do banco
+            self.produtos_db = self.estoque_ctrl.carregar_produtos()
+        else:
+            messagebox.showerror("Erro no Banco", msg)
 
         database.registrar_venda(total_final, itens_para_salvar, self.usuario['nome'], pagamento=metodo_pagamento)
 

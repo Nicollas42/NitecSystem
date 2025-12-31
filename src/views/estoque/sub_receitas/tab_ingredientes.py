@@ -23,7 +23,7 @@ class TabIngredientes(ctk.CTkFrame):
         self.ent_qtd = ctk.CTkEntry(f_add, placeholder_text="Qtd", width=60)
         self.ent_qtd.pack(side="left", padx=5)
         
-        self.btn_acao = ctk.CTkButton(f_add, text="+ Add", width=80, command=self.confirmar_item)
+        self.btn_acao = ctk.CTkButton(f_add, text="+", width=30,fg_color="#3B8ED0", command=self.confirmar_item)
         self.btn_acao.pack(side="left", padx=5)
 
         self.tree = ttk.Treeview(self, columns=("nome", "qtd", "un", "custo"), show="headings", height=10)
@@ -35,8 +35,15 @@ class TabIngredientes(ctk.CTkFrame):
         
         self.tree.bind("<<TreeviewSelect>>", self.ao_selecionar)
         
+        # BIND PARA CLICAR NO VAZIO
+        self.tree.bind("<Button-1>", self.ao_clicar_vazio)
+        
         ctk.CTkButton(self, text="Remover Selecionado", fg_color="#C0392B", height=25, 
                       command=self.remover).pack(pady=5)
+
+    def ao_clicar_vazio(self, event):
+        if not self.tree.identify_row(event.y):
+            self.limpar_campos()
 
     def atualizar_dados(self, dados_ingredientes):
         print(f"DEBUG [TabIngredientes]: Recebendo lista com {len(dados_ingredientes)} itens.")

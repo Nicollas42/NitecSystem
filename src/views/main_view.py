@@ -1,78 +1,66 @@
 # src/views/main_view.py
 import customtkinter as ctk
-import src.dev_state as dev_state # <--- Lembre de manter o import corrigido
-from src.controllers import config_manager
-from src.models import database
-from src.views.view_login import LoginFrame
-from src.views.view_dashboard import DashboardFrame
-from src.views.view_caixa import CaixaFrame
 from src.views.estoque.estoque_main import EstoqueFrame
-from src.views.view_sobras import SobrasFrame
-from src.views.view_financeiro import FinanceiroFrame
+from src.views.view_caixa import CaixaFrame
+from src.views.view_financeiro import FinanceiroFrame # Assumindo que dashboard é financeiro
 
-class AppPrincipal(ctk.CTk):
-    def __init__(self):
-        super().__init__()
-        self.config = config_manager.aplicar_tema_inicial()
-        self.title("NitecSystem Professional - Padaria")
-        self.geometry("1200x700")
+class MainApp(ctk.CTkFrame):
+    def __init__(self, master, usuario_dados, callback_logout):
+        super().__init__(master)
+        self.master = master
+        self.usuario = usuario_dados
+        self.callback_logout = callback_logout
         
-        self.usuario_atual = None
-        self.container = ctk.CTkFrame(self)
-        self.container.pack(fill="both", expand=True)
+        self.montar_menu()
 
-        # --- LÓGICA DE DEV (Carregar Estado Anterior) ---
-        estado = dev_state.carregar_estado()
-        modulo_salvo = estado.get("modulo")
+    def montar_menu(self):
+        # Limpa tela
+        for w in self.winfo_children(): w.destroy()
 
-        if modulo_salvo:
-            # CORREÇÃO AQUI: Troquei "cargo" por "role" para compatibilidade
-            self.usuario_atual = {"id": 1, "nome": "Admin (Dev)", "role": "admin"} 
-            print(f"🚀 DEV MODE: Restaurando módulo '{modulo_salvo}'")
-            self.navegar_para_modulo(modulo_salvo)
-        else:
-            self.mostrar_login()
-        # ------------------------------------------------
+        # Fundo elegante
+        self.configure(fg_color="#1a1a1a")
+        
+        # Barra lateral
+        sidebar = ctk.CTkFrame(self, width=250, corner_radius=0, fg_color="#222")
+        sidebar.pack(side="left", fill="y")
+        
+        ctk.CTkLabel(sidebar, text="NITEC SYSTEM", font=("Arial", 24, "bold"), text_color="#2CC985").pack(pady=(40, 20))
+        ctk.CTkLabel(sidebar, text=f"Olá, {self.usuario}", font=("Arial", 14), text_color="gray").pack(pady=(0, 40))
 
-    def limpar_tela(self):
-        for widget in self.container.winfo_children():
-            widget.destroy()
+        # Botões do Menu
+        self.criar_botao_menu(sidebar, "📦 GESTÃO DE ESTOQUE", self.abrir_estoque, "#2980B9")
+        self.criar_botao_menu(sidebar, "🛒 CAIXA (PDV)", self.abrir_caixa, "#27AE60")
+        self.criar_botao_menu(sidebar, "📊 FINANCEIRO / DASH", self.abrir_financeiro, "#8E44AD")
+        
+        ctk.CTkButton(sidebar, text="🚪 Sair", fg_color="#C0392B", command=self.callback_logout).pack(side="bottom", pady=20, padx=20, fill="x")
 
-    def mostrar_login(self):
-        dev_state.salvar_estado({"modulo": None, "aba_estoque": None})
-        self.limpar_tela()
-        self.usuario_atual = None
-        LoginFrame(self.container, self.processar_login).pack(fill="both", expand=True)
+        # Área de Conteúdo (Logo central)
+        content = ctk.CTkFrame(self, fg_color="transparent")
+        content.pack(side="right", fill="both", expand=True)
+        ctk.CTkLabel(content, text="Selecione um módulo ao lado", font=("Arial", 20), text_color="#555").place(relx=0.5, rely=0.5, anchor="center")
 
-    def processar_login(self, user, senha, label_erro):
-        dados = database.verificar_login(user, senha)
-        if dados:
-            self.usuario_atual = dados
-            self.mostrar_dashboard()
-        else:
-            label_erro.configure(text="Acesso Negado.")
+    def criar_botao_menu(self, parent, texto, comando, cor):
+        ctk.CTkButton(parent, text=texto, height=50, fg_color="transparent", border_width=1, border_color=cor,
+                      hover_color=cor, font=("Arial", 14, "bold"), anchor="w", command=comando).pack(fill="x", padx=20, pady=10)
 
-    def mostrar_dashboard(self):
-        self.limpar_tela()
-        dev_state.salvar_estado({"modulo": "dashboard"}) 
-        DashboardFrame(self.container, self.usuario_atual, 
-                       self.navegar_para_modulo, self.mostrar_login).pack(fill="both", expand=True)
+    def abrir_estoque(self):
+        self.limpar_conteudo()
+        # Passa self.montar_menu como callback para o botão "Voltar" do estoque
+        app = EstoqueFrame(self, callback_voltar=self.montar_menu)
+        app.pack(fill="both", expand=True)
 
-    def navegar_para_modulo(self, modulo):
-        self.limpar_tela()
-        dev_state.salvar_estado({"modulo": modulo})
+    def abrir_caixa(self):
+        self.limpar_conteudo()
+        # Como o Caixa espera um dicionário de usuário, adaptamos se for só string
+        user_dict = {"nome": self.usuario} if isinstance(self.usuario, str) else self.usuario
+        app = CaixaFrame(self, usuario_dados=user_dict, callback_voltar=self.montar_menu)
+        app.pack(fill="both", expand=True)
 
-        if modulo == "caixa":
-            CaixaFrame(self.container, self.usuario_atual, self.mostrar_dashboard).pack(fill="both", expand=True)
-        elif modulo == "estoque":
-            EstoqueFrame(self.container, self.mostrar_dashboard).pack(fill="both", expand=True)
-        elif modulo == "sobras":
-            SobrasFrame(self.container, self.usuario_atual, self.mostrar_dashboard).pack(fill="both", expand=True)
-        elif modulo == "financeiro":
-            FinanceiroFrame(self.container, self.usuario_atual, self.mostrar_dashboard).pack(fill="both", expand=True)
-        elif modulo == "dashboard":
-             DashboardFrame(self.container, self.usuario_atual, self.navegar_para_modulo, self.mostrar_login).pack(fill="both", expand=True)
+    def abrir_financeiro(self):
+        self.limpar_conteudo()
+        user_dict = {"nome": self.usuario} if isinstance(self.usuario, str) else self.usuario
+        app = FinanceiroFrame(self, usuario_dados=user_dict, callback_voltar=self.montar_menu)
+        app.pack(fill="both", expand=True)
 
-if __name__ == "__main__":
-    app = AppPrincipal()
-    app.mainloop()
+    def limpar_conteudo(self):
+        for w in self.winfo_children(): w.destroy()

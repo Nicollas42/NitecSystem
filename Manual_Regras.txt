@@ -1,9 +1,6 @@
-
 ==============================================================================
-📘 NITEC SYSTEM V4 - MANUAL DE REGRAS DE NEGÓCIO E CÁLCULOS
-==============================================================================
-Versão: 4.0 (Industrial / Padaria)
-Data: 2025
+📘 NITEC SYSTEM V4.1 - MANUAL DE REGRAS DE NEGÓCIO E CÁLCULOS
+============================================================================== Versão: 4.1 (Com Módulo Fiscal e UX Melhorada) Data: 2025
 
 ------------------------------------------------------------------------------
 1. CLASSIFICAÇÃO DE ITENS
@@ -12,28 +9,19 @@ O sistema divide os cadastros em 3 categorias para definir a origem do custo
 e do estoque:
 
 [A] INSUMO
-    - O que é: Matéria-prima (Farinha, Ovo, Água Filtrada).
-    - Origem do Custo: Definido manualmente no cadastro (preço de compra).
-    - Estoque: Entra via Nota Fiscal/Compra no Estoque FUNDO.
-    - Exemplo: Farinha de Trigo, Gás (se controlado), Água (Item 9000).
-
+    - O que é: Matéria-prima (Farinha, Ovo, Água Filtrada).     - Origem do Custo: Definido manualmente no cadastro (preço de compra).     - Estoque: Entra via Nota Fiscal/Compra no Estoque FUNDO.
+    - Exemplo: Farinha de Trigo, Gás (se controlado), Água (Item 9000). 
 [B] PRODUTO (REVENDA)
-    - O que é: Item comprado pronto para revender.
-    - Origem do Custo: Preço de Compra.
-    - Estoque: Entra via Compra no Estoque FUNDO.
+    - O que é: Item comprado pronto para revender.     - Origem do Custo: Preço de Compra.     - Estoque: Entra via Compra no Estoque FUNDO.
     - Exemplo: Coca-Cola, Manteiga, Chiclete.
 
 [C] INTERNO (FABRICAÇÃO PRÓPRIA)
-    - O que é: Produto feito na casa.
-    - Origem do Custo: CALCULADO pela Ficha Técnica (Ingredientes + Máquinas + MO).
-    - Estoque: Entra via ORDEM DE PRODUÇÃO no Estoque FUNDO.
-    - Exemplo: Pão Francês, Coxinha, Bolo.
+    - O que é: Produto feito na casa.     - Origem do Custo: CALCULADO pela Ficha Técnica (Ingredientes + Máquinas + MO).     - Estoque: Entra via ORDEM DE PRODUÇÃO no Estoque FUNDO.     - Exemplo: Pão Francês, Coxinha, Bolo.
 
 ------------------------------------------------------------------------------
 2. ENGENHARIA DE CUSTOS (CÁLCULOS)
 ------------------------------------------------------------------------------
-Utilizamos o Custeio por Absorção Simplificado.
-O custo de um produto fabricado é a soma de 3 pilares:
+Utilizamos o Custeio por Absorção Simplificado. O custo de um produto fabricado é a soma de 3 pilares: 
 
 FÓRMULA GERAL:
 Custo Total = (Custo Matéria Prima) + (Custo Mão de Obra) + (Custo Máquinas)
@@ -42,14 +30,14 @@ Custo Total = (Custo Matéria Prima) + (Custo Mão de Obra) + (Custo Máquinas)
 
 1. Matéria Prima (MP)
    Soma do custo de todos os ingredientes usados na receita.
-   * A Água (Item 9000) entra aqui para compor o peso físico correto.
+   * A Água (Item 9000) entra aqui para compor o peso físico correto. 
 
 2. Mão de Obra Direta (MOD)
-   Custo do tempo do funcionário dedicado à receita.
-   Fórmula: (Tempo em Minutos / 60) * Tarifa Hora do Funcionário
+ Custo do tempo do funcionário dedicado à receita. 
+ Fórmula: (Tempo em Minutos / 60) * Tarifa Hora do Funcionário 
 
 3. Custos Indiretos (Máquinas - Energia e Gás)
-   Calculado por máquina usada.
+ Calculado por máquina usada. 
 
    A) Energia Elétrica:
       Custo = (Potência em Watts / 1000) * (Tempo Uso / 60) * Tarifa kWh
@@ -58,39 +46,56 @@ Custo Total = (Custo Matéria Prima) + (Custo Mão de Obra) + (Custo Máquinas)
       Custo = (Consumo kg/h) * (Tempo Uso / 60) * Tarifa kg Gás
 
 ------------------------------------------------------------------------------
-3. PRECIFICAÇÃO (MARKUP)
+3. PRECIFICAÇÃO E IMPOSTOS (ATUALIZADO V4.1)
 ------------------------------------------------------------------------------
-Após achar o Custo Total do lote, dividimos pelo rendimento.
+O sistema agora considera impostos sobre a venda para garantir que a margem
+de lucro seja líquida.
 
-1. Custo Unitário = Custo Total do Lote / Quantidade Rendimento
-2. Preço Sugerido = Custo Unitário * (1 + (Margem de Lucro % / 100))
+1. Custo Unitário = Custo Total do Lote / Quantidade Rendimento 
 
-Exemplo:
-Custo Unitário = R$ 1,00
-Margem Desejada = 200%
-Preço Venda = 1,00 * (1 + 2) = R$ 3,00
+2. Fórmula de Preço Sugerido (Com Imposto):
+   
+   Preço = (Custo Unitário * (1 + Margem%)) / (1 - Imposto%)
+
+   * Onde 'Imposto%' reduz a base de cálculo, pois impostos (Simples, ICMS)
+     incidem sobre o Preço de Venda, não sobre o Custo.
+
+Exemplo Prático:
+   - Custo Unitário: R$ 10,00
+   - Margem Desejada: 100% (Quer ganhar R$ 10,00 de lucro)
+   - Imposto: 10%
+   
+   Cálculo: (10 * 2) / (1 - 0.10)
+   Preço Sugerido = 20 / 0.90 = R$ 22,22
+
+   * Prova Real: 
+     Venda R$ 22,22 - Imposto(10%) R$ 2,22 = Sobra R$ 20,00.
+     R$ 20,00 - Custo R$ 10,00 = Lucro R$ 10,00 (100%).
+
+3. DEFINIÇÃO MANUAL DE PREÇO
+   - Na aba Financeiro, existe o campo "DEFINIR PREÇO DE VENDA".
+   - Se preenchido, o sistema ignora o cálculo sugerido e fixa este valor.
+   - Ao salvar a Ficha Técnica, esse preço atualiza automaticamente o PDV.
 
 ------------------------------------------------------------------------------
 4. DINÂMICA DE ESTOQUE (FUNDO vs FRENTE)
-------------------------------------------------------------------------------
-O sistema possui dois locais de estoque para controle de perdas e reposição.
+------------------------------------------------------------------------------ O sistema possui dois locais de estoque para controle de perdas e reposição. 
 
 [1] ESTOQUE FUNDO (Depósito/Fábrica)
     - Onde chegam as Compras.
     - Onde a Produção deposita os itens prontos.
-    - O CAIXA NÃO VENDE DAQUI.
+    - O CAIXA NÃO VENDE DAQUI. 
 
 [2] ESTOQUE FRENTE (Loja/Vitrine)
     - Onde o cliente pega o produto.
-    - O CAIXA SÓ VENDE DAQUI.
+    - O CAIXA SÓ VENDE DAQUI. 
 
 Fluxo:
 Compra -> Fundo -> (Produção) -> Fundo -> Transferência -> Frente -> Venda
 
 ------------------------------------------------------------------------------
 5. AUDITORIA E RESULTADO
-------------------------------------------------------------------------------
-O relatório de auditoria cruza o valor vendido com o custo exato do item.
+------------------------------------------------------------------------------ O relatório de auditoria cruza o valor vendido com o custo exato do item. 
 
 Lucro Líquido = Receita Total - (Custo Mercadoria Vendida + Valor das Perdas)
 
@@ -98,13 +103,29 @@ Lucro Líquido = Receita Total - (Custo Mercadoria Vendida + Valor das Perdas)
   Energia + Mão de Obra) está maior que o Preço de Venda.
 
 ------------------------------------------------------------------------------
-6. CONFIGURAÇÕES GLOBAIS (TARIFAS ATUAIS)
+6. USABILIDADE E NAVEGAÇÃO (NOVO)
 ------------------------------------------------------------------------------
-Valores configurados no sistema (podem ser alterados na aba Máquinas):
+Melhorias implementadas para evitar erros operacionais:
+
+1. Seleção Inteligente:
+   - Clicar em uma área vazia das listas (Produtos, Ingredientes ou Máquinas)
+     remove a seleção atual e limpa os campos de edição.
+   
+2. Edição de Máquinas:
+   - É possível editar uma máquina já cadastrada selecionando-a na lista e 
+     clicando no botão "✏️ Editar". O sistema mantém o histórico dela.
+
+3. Janelas Travadas (Modais):
+   - Telas de "Tarifas" e "Nova Máquina" bloqueiam o fundo até serem fechadas.
+   - Isso evita edições simultâneas que poderiam corromper dados.
+
+------------------------------------------------------------------------------
+7. CONFIGURAÇÕES GLOBAIS (TARIFAS ATUAIS)
+------------------------------------------------------------------------------ Valores configurados no sistema (podem ser alterados na aba Máquinas): 
 
 - Energia: R$ 0,95 / kWh
 - Gás: R$ 9,50 / kg
-- Mão de Obra: R$ 18,00 / hora
+- Mão de Obra: R$ 18,00 / hora (Sugestão: Incluir encargos trabalhistas)
 - Água (Insumo 9000): R$ 0,02 / Litro
 
 ==============================================================================

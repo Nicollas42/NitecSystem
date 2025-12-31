@@ -2,21 +2,18 @@
 import customtkinter as ctk
 from tkinter import ttk, messagebox
 from datetime import datetime, date
-from src.models import database
-# Importa a função auxiliar 'aplicar_mascara_data' e a NOVA função de formatação
 from src.utils.componentes_estilizados import CTkFloatingDropdown, CTkCalendar, aplicar_mascara_data
 from src.utils.formata_numeros_br import formata_numeros_br
 
 class AbaHistorico(ctk.CTkFrame):
-    def __init__(self, master, produtos_ref, callback_atualizar):
-        print("DEBUG [Historico]: Inicializando aba...")
+    def __init__(self, master, produtos_ref, callback_atualizar, controller):
         super().__init__(master)
         self.produtos = produtos_ref 
         self.callback_atualizar = callback_atualizar
-        self.popup_calendario = None 
+        self.controller = controller 
         
-        # Atributos dos Dropdowns
-        self.dropdown_prod = None    
+        self.popup_calendario = None 
+        self.dropdown_prod = None
         self.dropdown_user = None
         self.dropdown_tipo = None
         
@@ -24,24 +21,18 @@ class AbaHistorico(ctk.CTkFrame):
         self.sort_dir = "original"
         
         self.lista_produtos_full = sorted([p['nome'] for p in self.produtos.values()])
-        self.lista_usuarios_full = self.carregar_lista_usuarios()
+        self.lista_usuarios_full = []
         
-        # --- ATUALIZAÇÃO 1: Lista completa de tipos ---
         self.lista_tipos = [
-            "TODOS", 
-            "ENTRADA_COMPRA_FUNDO", 
-            "ENTRADA_PRODUCAO_FUNDO", 
-            "SAIDA_PRODUCAO_FUNDO", 
-            "TRANSFERENCIA", 
-            "SAIDA_VENDA_FRENTE", 
-            "SAIDA_PERDA_FRENTE", 
-            "SAIDA_PERDA_FUNDO"
+            "TODOS", "ENTRADA_COMPRA_FUNDO", "ENTRADA_PRODUCAO_FUNDO", 
+            "SAIDA_PRODUCAO_FUNDO", "TRANSFERENCIA", "SAIDA_VENDA_FRENTE", 
+            "SAIDA_PERDA_FRENTE", "SAIDA_PERDA_FUNDO"
         ]
 
         self.montar_layout()
         self.configurar_cores_tags()
         self.resetar_datas_hoje()
-        self.filtrar_dados() 
+        self.atualizar()
 
     def montar_layout(self):
         header_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -94,35 +85,16 @@ class AbaHistorico(ctk.CTkFrame):
         self.tree.pack(side="left", fill="both", expand=True)
 
     def configurar_cores_tags(self):
-        """
-        --- ATUALIZAÇÃO 2: Configuração de Cores Específicas ---
-        Verde Limão para Entrada Produção.
-        Vermelho com texto preto para Saída Produção.
-        Cores distintas para os demais.
-        """
-        # (Background, Foreground)
         colors = {
-            # Compra (Azul padrão)
             "ENTRADA_COMPRA_FUNDO":     ("#2980B9", "white"),
-            
-            # Produção (Solicitação Especial)
-            "ENTRADA_PRODUCAO_FUNDO":   ("#C6FF00", "black"), # Verde Limão
-            "SAIDA_PRODUCAO_FUNDO":     ("#FF5252", "black"), # Vermelho Claro (Matéria Prima saindo)
-            
-            # Transferência (Roxo)
+            "ENTRADA_PRODUCAO_FUNDO":   ("#C6FF00", "black"), 
+            "SAIDA_PRODUCAO_FUNDO":     ("#FF5252", "black"), 
             "TRANSFERENCIA":            ("#BB8FCE", "black"),
-            
-            # Venda (Verde suave ou Branco)
             "SAIDA_VENDA_FRENTE":       ("#EAFAF1", "black"),
-            
-            # Perdas (Laranja/Vermelho Escuro)
             "SAIDA_PERDA_FRENTE":       ("#E74C3C", "white"),
             "SAIDA_PERDA_FUNDO":        ("#C0392B", "white"),
-            
-            # Ajustes Manuais
             "ENTRADA_AJUSTE":           ("#F7DC6F", "black")
         }
-        
         for tag, (bg, fg) in colors.items():
             self.tree.tag_configure(tag, background=bg, foreground=fg)
 
@@ -187,8 +159,9 @@ class AbaHistorico(ctk.CTkFrame):
 
     def filtrar_dados(self):
         for i in self.tree.get_children(): self.tree.delete(i)
-        try: todos_movs = database.carregar_json(database.ARQ_MOVIMENTOS)[::-1]
-        except: todos_movs = []
+        
+        # MUDANÇA PRINCIPAL: CARREGA DO CONTROLLER SQL
+        todos_movs = self.controller.carregar_movimentacoes()
         
         if not hasattr(self, 'ent_data_ini') or not hasattr(self, 'ent_data_fim'):
             return
@@ -201,16 +174,14 @@ class AbaHistorico(ctk.CTkFrame):
             data_raw = m.get('data', '')
             try: dt_mov = datetime.strptime(data_raw.split()[0], "%Y-%m-%d").date()
             except: dt_mov = None
+            
             if f_ini and dt_mov and dt_mov < f_ini: continue
             if f_fim and dt_mov and dt_mov > f_fim: continue
             if f_tipo != "TODOS" and f_tipo not in m.get('tipo', ''): continue
             
-            # --- PROTEÇÃO CONTRA DADOS NULOS/NONE ---
-            # Garante que sempre seja string, mesmo se vier None do banco
             nome_mov = str(m.get('nome', '') or '')
             user_mov = str(m.get('usuario', '') or '')
             motivo_mov = str(m.get('motivo', '') or '')
-            # ----------------------------------------
 
             if f_prod and f_prod not in nome_mov.lower(): continue
             if f_user and f_user not in user_mov.lower(): continue
@@ -219,7 +190,6 @@ class AbaHistorico(ctk.CTkFrame):
             qtd = float(m.get('qtd', 0))
             is_insumo = p.get('tipo') == 'INSUMO'
             
-            # Lógica de valor unitário para o histórico
             base = p.get('custo', 0.0) if (is_insumo or 'PRODUCAO' in m.get('tipo', '') or 'ENTRADA' in m.get('tipo', '')) else p.get('preco', 0.0)
             v_total = abs(qtd) * base
             
@@ -269,8 +239,8 @@ class AbaHistorico(ctk.CTkFrame):
 
     def carregar_lista_usuarios(self):
         try:
-            movs = database.carregar_json(database.ARQ_MOVIMENTOS)
-            # Filtra Nones antes de adicionar ao set
+            # Pega usuários do banco SQL
+            movs = self.controller.carregar_movimentacoes()
             return sorted(list({str(m.get('usuario') or 'Admin') for m in movs})) or ["Admin"]
         except: return ["Admin"]
 

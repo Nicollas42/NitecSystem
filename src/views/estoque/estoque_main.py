@@ -3,7 +3,6 @@
 import customtkinter as ctk
 from tkinter import ttk
 from src.controllers.estoque_controller import EstoqueController
-from src.models import database
 import src.dev_state as dev_state
 
 from .aba_cadastro import AbaCadastro
@@ -12,7 +11,6 @@ from .aba_visao_geral import AbaVisaoGeral
 from .aba_historico import AbaHistorico
 from .aba_receitas import AbaReceitas
 from .aba_producao import AbaProducao
-# [NOVO IMPORT]
 from .aba_auditoria import AbaAuditoria 
 
 class EstoqueFrame(ctk.CTkFrame):
@@ -51,7 +49,7 @@ class EstoqueFrame(ctk.CTkFrame):
             "mov": "🔄 Movimentação",
             "list": "📋 Visão Geral",
             "hist": "📜 Histórico",
-            "audit": "🕵️ Auditoria Estoque" # [NOVA ABA]
+            "audit": "🕵️ Auditoria Estoque"
         }
 
         # Criação das abas
@@ -61,7 +59,7 @@ class EstoqueFrame(ctk.CTkFrame):
         tab_mov = self.tabview.add(self.nomes_abas["mov"])
         tab_list = self.tabview.add(self.nomes_abas["list"])
         tab_hist = self.tabview.add(self.nomes_abas["hist"])
-        tab_audit = self.tabview.add(self.nomes_abas["audit"]) # [ADICIONADO]
+        tab_audit = self.tabview.add(self.nomes_abas["audit"]) 
 
         # --- INSTANCIANDO CLASSES ---
         self.aba_cadastro = AbaCadastro(tab_cad, self.controller, self.atualizar_tudo)
@@ -79,11 +77,10 @@ class EstoqueFrame(ctk.CTkFrame):
         self.aba_visao = AbaVisaoGeral(tab_list, self.atualizar_tudo)
         self.aba_visao.pack(fill="both", expand=True)
 
-        self.aba_historico = AbaHistorico(tab_hist, self.produtos, self.atualizar_tudo)
+        self.aba_historico = AbaHistorico(tab_hist, self.produtos, self.atualizar_tudo, self.controller)
         self.aba_historico.pack(fill="both", expand=True)
         
-        # [NOVA INSTÂNCIA]
-        self.aba_auditoria = AbaAuditoria(tab_audit, self.produtos, self.atualizar_tudo)
+        self.aba_auditoria = AbaAuditoria(tab_audit, self.produtos, self.atualizar_tudo, self.controller)
         self.aba_auditoria.pack(fill="both", expand=True)
 
     def ao_mudar_aba(self):
@@ -111,8 +108,8 @@ class EstoqueFrame(ctk.CTkFrame):
             except: pass
 
     def atualizar_tudo(self):
-        print("🔄 Atualizando Módulos...")
-        novos_dados = database.carregar_produtos()
+        print("🔄 Atualizando Módulos via PostgreSQL...")
+        novos_dados = self.controller.carregar_produtos()
         self.produtos.clear()
         self.produtos.update(novos_dados)
         
@@ -122,7 +119,4 @@ class EstoqueFrame(ctk.CTkFrame):
         self.aba_movimentacao.atualizar_produtos(self.produtos)
         self.aba_visao.atualizar(self.produtos)
         self.aba_historico.atualizar()
-        
-        # [ATUALIZA NOVA ABA]
-        if hasattr(self, 'aba_auditoria'):
-            self.aba_auditoria.atualizar()
+        self.aba_auditoria.atualizar()
