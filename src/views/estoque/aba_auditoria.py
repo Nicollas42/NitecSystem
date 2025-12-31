@@ -3,7 +3,6 @@
 import customtkinter as ctk
 from tkinter import ttk
 from datetime import datetime, date
-from src.models import database
 from src.utils.componentes_estilizados import CTkCalendar, aplicar_mascara_data
 from src.utils.formata_numeros_br import formata_numeros_br
 
@@ -13,10 +12,11 @@ class AbaAuditoria(ctk.CTkFrame):
     Gera relatórios detalhados de vendas vs. perdas e resultado financeiro por item.
     """
 
-    def __init__(self, master, produtos_ref, callback_atualizar):
+    def __init__(self, master, produtos_ref, callback_atualizar, controller):
         super().__init__(master)
         self.produtos = produtos_ref
         self.callback_atualizar = callback_atualizar
+        self.controller = controller
         
         self.popup_calendario = None
         
@@ -144,10 +144,12 @@ class AbaAuditoria(ctk.CTkFrame):
         dt_ini, dt_fim = self.get_datas()
         if not dt_ini or not dt_fim: return 
 
-        movimentos = database.carregar_json(database.ARQ_MOVIMENTOS)
+        # 1. Pega dados do Controller
+        movimentos = self.controller.carregar_movimentacoes()
+        self.produtos = self.controller.carregar_produtos() 
         relatorio = {}
 
-        # 1. Inicializa estrutura para todos os produtos
+        # 2. Inicializa estrutura para todos os produtos
         for cod, dados in self.produtos.items():
             relatorio[cod] = {
                 "nome": dados['nome'],
@@ -160,7 +162,7 @@ class AbaAuditoria(ctk.CTkFrame):
                 "valor_perda": 0.0, 
             }
 
-        # 2. Processa Movimentos
+        # 3. Processa Movimentos
         for mov in movimentos:
             try:
                 data_mov = datetime.strptime(mov['data'].split()[0], "%Y-%m-%d").date()
@@ -186,7 +188,7 @@ class AbaAuditoria(ctk.CTkFrame):
                 relatorio[cod]['qtd_perda'] += qtd
                 relatorio[cod]['valor_perda'] += (qtd * custo_atual)
 
-        # 3. Formata para Tabela
+        # 4. Formata para Tabela
         lista_final = []
         for cod, r in relatorio.items():
             if r['qtd_vendida'] == 0 and r['qtd_perda'] == 0: continue
@@ -244,4 +246,4 @@ class AbaAuditoria(ctk.CTkFrame):
 
     def atualizar(self):
         """Chamado externamente para atualizar dados."""
-        self.produtos = database.carregar_produtos()
+        self.gerar_relatorio()
